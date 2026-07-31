@@ -1,0 +1,277 @@
+/**
+ * Tipos del contrato de la API (crud-ts-nest-be).
+ *
+ * Reflejan uno a uno los DTOs del backend. Se mantienen a mano (y no generados)
+ * para que queden legibles; si el backend cambia un contrato, este archivo es el
+ * unico punto a tocar en el front.
+ */
+
+// --- Comunes -----------------------------------------------------------------
+
+export type SortDirection = 'ASC' | 'DESC';
+
+/** Metadatos de paginado, identicos en todos los listados. */
+export interface PageMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+/** Envoltorio de una pagina de resultados. */
+export interface Paginated<T> {
+  items: T[];
+  meta: PageMeta;
+}
+
+/** Cuerpo unico de error que devuelve la API ante cualquier fallo. */
+export interface ApiErrorBody {
+  statusCode: number;
+  /** Identificador estable del error; es la clave sobre la que ramificar. */
+  code: string;
+  /** Texto (error de dominio) o lista (varios campos invalidos). */
+  message: string | string[];
+  path: string;
+  method: string;
+  timestamp: string;
+  /** Solo presente en errores 500. */
+  incidentId?: string;
+}
+
+// --- Marcas ------------------------------------------------------------------
+
+export interface Brand {
+  brandId: string;
+  brandDescription: string;
+  brandActive: boolean;
+}
+
+export interface CreateBrandRequest {
+  brandDescription: string;
+  brandActive?: boolean;
+}
+
+export interface UpdateBrandRequest {
+  brandDescription?: string;
+  brandActive?: boolean;
+}
+
+export interface ListBrandsQuery {
+  /** Coincidencia parcial, insensible a mayusculas. */
+  brandDescription?: string;
+  brandActive?: boolean;
+  sortDirection?: SortDirection;
+  page?: number;
+  limit?: number;
+}
+
+// --- Clientes ----------------------------------------------------------------
+
+export interface Client {
+  clientId: string;
+  clientDescription: string;
+  documentTypeId: number;
+  documentNumber: string;
+  clientActive: boolean;
+}
+
+export interface CreateClientRequest {
+  clientDescription: string;
+  documentTypeId: number;
+  /** Solo digitos: 8 (DNI) u 11 (RUC). */
+  documentNumber: string;
+  clientActive?: boolean;
+}
+
+export interface UpdateClientRequest {
+  clientDescription?: string;
+  documentTypeId?: number;
+  documentNumber?: string;
+  clientActive?: boolean;
+}
+
+export interface ListClientsQuery {
+  clientDescription?: string;
+  /** Busqueda exacta por documento. */
+  documentNumber?: string;
+  documentTypeId?: number;
+  clientActive?: boolean;
+  sortBy?: 'description' | 'documentNumber';
+  sortDirection?: SortDirection;
+  page?: number;
+  limit?: number;
+}
+
+// --- Productos ---------------------------------------------------------------
+
+export interface Product {
+  productId: string;
+  brandId: string;
+  productName: string;
+  productDescription: string | null;
+  productImage: string | null;
+  productUnitPrice: number;
+  productActive: boolean;
+}
+
+export interface CreateProductRequest {
+  brandId: string;
+  productName: string;
+  productDescription?: string | null;
+  productImage?: string | null;
+  productUnitPrice: number;
+  productActive?: boolean;
+}
+
+export interface UpdateProductRequest {
+  brandId?: string;
+  productName?: string;
+  /** `null` borra la descripcion; omitir la deja intacta. */
+  productDescription?: string | null;
+  /** `null` quita la imagen; omitir la deja intacta. */
+  productImage?: string | null;
+  productUnitPrice?: number;
+  productActive?: boolean;
+}
+
+export interface PriceRange {
+  min?: number;
+  max?: number;
+}
+
+/** Cuerpo de POST /products/query (la busqueda viaja en el body, no en la URL). */
+export interface QueryProductsRequest {
+  productDescription?: string;
+  productUnitPrice?: PriceRange;
+  brandId?: string;
+  productActive?: boolean;
+  sortBy?: 'name' | 'unitPrice';
+  sortDirection?: SortDirection;
+  page?: number;
+  limit?: number;
+}
+
+// --- Ventas ------------------------------------------------------------------
+
+export interface SaleLine {
+  item: number;
+  productId: string;
+  quantity: number;
+  /** Precio congelado al momento de la venta. */
+  unitPrice: number;
+  partial: number;
+}
+
+export interface Sale {
+  saleId: string;
+  saleNumber: string;
+  saleTypeCode: string;
+  saleDate: string;
+  saleHour: string;
+  clientId: string;
+  departmentId: string;
+  provinceId: string;
+  districtId: string;
+  subTotal: number;
+  igv: number;
+  total: number;
+  saleDetails: SaleLine[];
+}
+
+/** Cabecera del listado: sin lineas, con `lineCount`. */
+export interface SaleSummary {
+  saleId: string;
+  saleNumber: string;
+  saleTypeCode: string;
+  saleDate: string;
+  saleHour: string;
+  clientId: string;
+  departmentId: string;
+  provinceId: string;
+  districtId: string;
+  subTotal: number;
+  igv: number;
+  total: number;
+  lineCount: number;
+}
+
+export interface SaleLineRequest {
+  productId: string;
+  quantity: number;
+}
+
+/** No se envian importes ni numero: los calcula/asigna el backend. */
+export interface CreateSaleRequest {
+  saleTypeId: number;
+  clientId: string;
+  /** Codigo de distrito, 6 digitos. */
+  districtId: string;
+  saleDate?: string;
+  saleHour?: string;
+  saleDetails: SaleLineRequest[];
+}
+
+export interface UpdateSaleRequest {
+  clientId?: string;
+  districtId?: string;
+  /** Si viene, reemplaza por completo las lineas y recalcula importes. */
+  saleDetails?: SaleLineRequest[];
+}
+
+export interface SearchSalesQuery {
+  saleNumber?: string;
+  saleTypeCode?: string;
+  clientId?: string;
+  districtId?: string;
+  departmentId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  totalMin?: number;
+  totalMax?: number;
+  sortBy?: 'date' | 'number' | 'total';
+  sortDirection?: SortDirection;
+  page?: number;
+  limit?: number;
+}
+
+// --- Catalogos ---------------------------------------------------------------
+
+export interface DocumentType {
+  documentTypeId: number;
+  documentTypeDescription: string;
+}
+
+export interface SaleType {
+  saleTypeId: number;
+  saleTypeDescription: string;
+  /** Prefijo del numero de comprobante (p. ej. "FAC"). */
+  saleTypeCode: string;
+}
+
+// --- Ubigeo ------------------------------------------------------------------
+
+export interface Department {
+  departmentId: string;
+  departmentDescription: string;
+}
+
+export interface Province {
+  provinceId: string;
+  departmentId: string;
+  provinceDescription: string;
+}
+
+export interface District {
+  districtId: string;
+  provinceId: string;
+  districtDescription: string;
+}
+
+// --- Salud -------------------------------------------------------------------
+
+export interface HealthStatus {
+  status: string;
+  latencyMs: number;
+}
