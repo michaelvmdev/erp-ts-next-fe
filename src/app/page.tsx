@@ -1,24 +1,10 @@
 import Link from 'next/link';
 import { Card, PageHeader } from '@/components/ui';
 import { BoxIcon, ChartIcon, PlusIcon, SearchIcon } from '@/components/icons';
+import { MonthIndicators } from '@/components/month-indicators';
 import { currentMonthLabel } from '@/lib/format';
 
-/**
- * Dashboard (home). Los indicadores del mes son placeholders: el usuario
- * definira mas adelante que metricas mostrar. La estructura ya queda lista.
- */
-
-interface Indicator {
-  label: string;
-  hint: string;
-}
-
-const indicators: Indicator[] = [
-  { label: 'Ventas del mes', hint: 'Cantidad de comprobantes' },
-  { label: 'Ingresos (S/)', hint: 'Total facturado' },
-  { label: 'Boletas', hint: 'Emitidas este mes' },
-  { label: 'Facturas', hint: 'Emitidas este mes' },
-];
+/** Dashboard (home): indicadores del mes actual y accesos rapidos. */
 
 interface QuickAction {
   label: string;
@@ -64,26 +50,9 @@ export default function DashboardPage() {
         subtitle={`Resumen de ${month}`}
       />
 
-      {/* Indicadores del mes (placeholders) */}
+      {/* Indicadores del mes (datos reales del backend) */}
       <section aria-label="Indicadores del mes">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {indicators.map((it) => (
-            <Card key={it.label} className="p-5">
-              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                {it.label}
-              </p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-300 dark:text-slate-600">
-                —
-              </p>
-              <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
-                {it.hint}
-              </p>
-            </Card>
-          ))}
-        </div>
-        <p className="mt-3 text-xs text-slate-400 dark:text-slate-500">
-          Los indicadores se conectaran cuando definas las metricas del mes.
-        </p>
+        <MonthIndicators />
       </section>
 
       {/* Accesos rapidos */}
