@@ -43,7 +43,11 @@ const nav: NavEntry[] = [
     ],
   },
   { label: 'Productos', href: '/productos', icon: BoxIcon },
-  { label: 'Diagramas', href: '/diagramas', icon: ChartIcon },
+  {
+    label: 'Diagramas',
+    icon: ChartIcon,
+    children: [{ label: 'Anual', href: '/diagramas/anual', icon: ChartIcon }],
+  },
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -93,11 +97,13 @@ function SidebarContent({ onNavigate }: { onNavigate: () => void }) {
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
         {nav.map((entry) =>
           'children' in entry ? (
-            <div key={entry.label} className="pt-2">
-              <p className="flex items-center gap-2 px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+            <div key={entry.label} className="pt-1">
+              {/* Cabecera del menu (icono + nombre); los hijos van anidados. */}
+              <div className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 dark:text-slate-400">
+                <entry.icon className="size-5 shrink-0" />
                 {entry.label}
-              </p>
-              <div className="space-y-1">
+              </div>
+              <div className="ml-[1.625rem] space-y-1 border-l border-slate-200 pl-2 dark:border-slate-800">
                 {entry.children.map((link) => (
                   <NavItem key={link.href} link={link} onNavigate={onNavigate} />
                 ))}

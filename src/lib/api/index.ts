@@ -17,6 +17,8 @@ import { productsApi } from './products';
 import { salesApi } from './sales';
 import { documentTypesApi, saleTypesApi, healthApi } from './catalogs';
 import { ubigeoApi } from './ubigeo';
+import { categoriesApi } from './categories';
+import { dashboardApi } from './dashboard';
 
 export {
   brandsApi,
@@ -27,6 +29,8 @@ export {
   saleTypesApi,
   healthApi,
   ubigeoApi,
+  categoriesApi,
+  dashboardApi,
 };
 
 /** Cliente agrupado por dominio, espejo de los recursos del backend. */
@@ -39,4 +43,6 @@ export const api = {
   saleTypes: saleTypesApi,
   health: healthApi,
   ubigeo: ubigeoApi,
+  categories: categoriesApi,
+  dashboard: dashboardApi,
 };

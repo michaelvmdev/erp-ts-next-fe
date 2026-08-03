@@ -1,11 +1,6 @@
-import { ComingSoon } from '@/components/placeholder';
+import { redirect } from 'next/navigation';
 
-export default function DiagramasPage() {
-  return (
-    <ComingSoon
-      title="Diagramas"
-      subtitle="Graficos y analitica de ventas."
-      note="Aqui mostraremos graficos de ventas por periodo, productos mas vendidos y tendencias."
-    />
-  );
+// Los diagramas viven ahora bajo el submenu "Anual".
+export default function DiagramasIndexPage() {
+  redirect('/diagramas/anual');
 }

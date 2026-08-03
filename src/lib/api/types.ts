@@ -269,6 +269,58 @@ export interface District {
   districtDescription: string;
 }
 
+// --- Categorias --------------------------------------------------------------
+
+export interface Category {
+  categoryId: string;
+  categoryDescription: string;
+  categoryActive: boolean;
+}
+
+export interface ListCategoriesQuery {
+  categoryDescription?: string;
+  categoryActive?: boolean;
+  sortDirection?: SortDirection;
+  page?: number;
+  limit?: number;
+}
+
+// --- Diagramas anuales (dashboard) -------------------------------------------
+
+/** Un punto mensual de importe. `total` es una cadena decimal ("48250.00"). */
+export interface MonthlySalesPoint {
+  month: number;
+  total: string;
+}
+
+/** Serie anual de 12 meses; usada por ventas mensuales, por ubigeo y por categoria. */
+export interface MonthlySalesSeries {
+  year: number;
+  items: MonthlySalesPoint[];
+}
+
+/** Producto lider de un mes; los campos van en `null` si el mes no tuvo ventas. */
+export interface MonthlyTopProductPoint {
+  month: number;
+  productId: string | null;
+  productName: string | null;
+  productDescription: string | null;
+  unitsSold: number;
+}
+
+export interface TopProductByMonthSeries {
+  year: number;
+  items: MonthlyTopProductPoint[];
+}
+
+export interface MonthlySalesByUbigeoParams {
+  year: number;
+  /** Obligatorio: codigo de departamento (2 digitos). */
+  departmentId: string;
+  provinceId?: string;
+  districtId?: string;
+}
+
 // --- Salud -------------------------------------------------------------------
 
 export interface HealthStatus {
