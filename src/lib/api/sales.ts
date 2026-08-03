@@ -3,6 +3,8 @@ import type {
   CreateSaleRequest,
   Paginated,
   Sale,
+  SaleEmailResult,
+  SalePdf,
   SaleSummary,
   SearchSalesQuery,
   UpdateSaleRequest,
@@ -25,4 +27,12 @@ export const salesApi = {
   /** PATCH /sales/:saleId (corrige cliente, distrito o lineas) */
   update: (saleId: string, body: UpdateSaleRequest, signal?: AbortSignal) =>
     http.patch<Sale>(`/sales/${saleId}`, body, signal),
+
+  /** GET /sales/:saleId/pdf (comprobante en PDF, base64) */
+  pdf: (saleId: string, signal?: AbortSignal) =>
+    http.get<SalePdf>(`/sales/${saleId}/pdf`, undefined, signal),
+
+  /** POST /sales/:saleId/send-email (adjunta el PDF al correo) */
+  sendEmail: (saleId: string, email: string, signal?: AbortSignal) =>
+    http.post<SaleEmailResult>(`/sales/${saleId}/send-email`, { email }, signal),
 };

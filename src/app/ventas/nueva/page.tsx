@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { PickerModal } from '@/components/picker-modal';
+import { SaleDocumentActions } from '@/components/sale-document';
 import {
   BoxIcon,
   CheckIcon,
@@ -273,6 +274,13 @@ export default function NuevaVentaPage() {
               />
             </div>
           </dl>
+
+          <div className="mt-6 border-t border-slate-200 pt-6 dark:border-slate-700">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+              Comprobante
+            </p>
+            <SaleDocumentActions saleId={result.saleId} />
+          </div>
 
           <div className="mt-6 flex justify-center gap-3">
             <Button onClick={resetForm}>

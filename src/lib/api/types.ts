@@ -220,6 +220,20 @@ export interface UpdateSaleRequest {
   saleDetails?: SaleLineRequest[];
 }
 
+/** Comprobante en PDF codificado en base64 (generado en memoria por el backend). */
+export interface SalePdf {
+  fileName: string;
+  mimeType: string;
+  base64: string;
+}
+
+/** Resultado de enviar el comprobante por correo. */
+export interface SaleEmailResult {
+  to: string;
+  messageId: string;
+  sentAt: string;
+}
+
 export interface SearchSalesQuery {
   saleNumber?: string;
   saleTypeCode?: string;
