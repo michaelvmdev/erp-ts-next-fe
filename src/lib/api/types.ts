@@ -109,6 +109,7 @@ export interface ListClientsQuery {
 export interface Product {
   productId: string;
   brandId: string;
+  categoryId: string;
   productName: string;
   productDescription: string | null;
   productImage: string | null;
@@ -118,6 +119,7 @@ export interface Product {
 
 export interface CreateProductRequest {
   brandId: string;
+  categoryId: string;
   productName: string;
   productDescription?: string | null;
   productImage?: string | null;
@@ -127,6 +129,7 @@ export interface CreateProductRequest {
 
 export interface UpdateProductRequest {
   brandId?: string;
+  categoryId?: string;
   productName?: string;
   /** `null` borra la descripcion; omitir la deja intacta. */
   productDescription?: string | null;
