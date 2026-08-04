@@ -44,7 +44,7 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="font-sans">
+      <body className="font-sans" suppressHydrationWarning>
         <AppShell>{children}</AppShell>
       </body>
     </html>
