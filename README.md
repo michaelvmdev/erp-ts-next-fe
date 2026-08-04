@@ -1,36 +1,105 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# crud-ts-next-fe
 
-## Getting Started
+Frontend en Next.js para un sistema de ventas conectado al backend
+`crud-ts-nest-be`. La aplicacion cubre operaciones CRUD de catalogos,
+registro y busqueda de ventas, emision de comprobantes y analitica anual.
 
-First, run the development server:
+## Funcionalidades
+
+- Dashboard con indicadores del mes actual.
+- Registro de ventas con cliente, tipo de comprobante, ubicacion y productos.
+- Busqueda de ventas por numero, tipo, cliente, fechas, importes y ordenamiento.
+- Acciones sobre comprobantes: ver detalle, descargar PDF y enviar por correo
+  cuando el backend lo permite.
+- CRUD de productos, marcas, categorias y clientes.
+- Diagramas anuales con Highcharts: ventas mensuales, ventas por ubigeo,
+  ventas por categoria y producto lider por mes.
+- Proxy interno `/api/*` hacia el backend para evitar exponer la URL real en el
+  navegador y simplificar CORS.
+- Soporte de tema claro/oscuro.
+
+## Stack
+
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- Highcharts
+- ESLint
+
+## Requisitos
+
+- Node.js compatible con Next.js 16.
+- npm.
+- Backend `crud-ts-nest-be` ejecutandose y accesible por HTTP.
+
+## Configuracion
+
+1. Instala dependencias:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Crea el archivo de entorno local desde el ejemplo:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+cp .env.example .env.local
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. Ajusta la URL del backend en `.env.local`:
 
-## Learn More
+```env
+BACKEND_API_URL=http://localhost:3000
+```
 
-To learn more about Next.js, take a look at the following resources:
+`BACKEND_API_URL` se usa solo del lado servidor en el route handler
+`src/app/api/[...path]/route.ts`. El navegador llama a `/api/*` y Next.js
+reenvia la solicitud al backend.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run dev      # servidor de desarrollo en http://localhost:3001
+npm run build    # build de produccion
+npm run start    # sirve el build en http://localhost:3001
+npm run lint     # revision con ESLint
+```
 
-## Deploy on Vercel
+## Rutas Principales
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `/`: dashboard.
+- `/ventas/nueva`: registrar una nueva venta.
+- `/ventas/buscar`: buscar ventas emitidas y abrir su detalle.
+- `/productos`: administrar productos.
+- `/marcas`: administrar marcas.
+- `/categorias`: administrar categorias.
+- `/clientes`: administrar clientes.
+- `/diagramas/anual`: ver analitica anual.
+- `/demo`: pantalla de demostracion.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Estructura Del Proyecto
+
+```text
+src/
+  app/                 Rutas de Next.js y proxy API
+  components/          Componentes reutilizables de UI y modales
+  lib/api/             Cliente tipado para los recursos del backend
+  lib/                 Utilidades compartidas
+public/                Assets estaticos
+```
+
+## Contrato Con El Backend
+
+Los tipos del contrato viven en `src/lib/api/types.ts` y reflejan los DTOs del
+backend. Si cambia un endpoint o DTO en `crud-ts-nest-be`, actualiza primero ese
+archivo y luego los clientes especificos en `src/lib/api/`.
+
+El proxy acepta cualquier metodo definido en el route handler y conserva la ruta
+original:
+
+```text
+/api/brands          -> BACKEND_API_URL/brands
+/api/products/query  -> BACKEND_API_URL/products/query
+/api/sales           -> BACKEND_API_URL/sales
+```
