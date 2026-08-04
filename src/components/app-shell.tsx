@@ -14,6 +14,7 @@ import {
   PlusIcon,
   ReceiptIcon,
   SearchIcon,
+  UserIcon,
 } from './icons';
 
 type IconType = ComponentType<{ className?: string }>;
@@ -43,6 +44,7 @@ const nav: NavEntry[] = [
     ],
   },
   { label: 'Productos', href: '/productos', icon: BoxIcon },
+  { label: 'Clientes', href: '/clientes', icon: UserIcon },
   {
     label: 'Diagramas',
     icon: ChartIcon,

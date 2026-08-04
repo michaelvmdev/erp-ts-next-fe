@@ -169,6 +169,14 @@ export const EyeIcon = base(
   </>,
 );
 
+export const PowerIcon = base(
+  <path
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    d="M5.636 5.636a9 9 0 1012.728 0M12 3v9"
+  />,
+);
+
 export const UserIcon = base(
   <path
     strokeLinecap="round"

@@ -24,4 +24,8 @@ export const clientsApi = {
   /** PATCH /clients/:clientId */
   update: (clientId: string, body: UpdateClientRequest, signal?: AbortSignal) =>
     http.patch<Client>(`/clients/${clientId}`, body, signal),
+
+  /** DELETE /clients/:clientId */
+  remove: (clientId: string, signal?: AbortSignal) =>
+    http.delete(`/clients/${clientId}`, signal),
 };
