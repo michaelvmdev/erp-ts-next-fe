@@ -24,4 +24,8 @@ export const brandsApi = {
   /** PATCH /brands/:brandId (tambien desactiva con `{ brandActive: false }`) */
   update: (brandId: string, body: UpdateBrandRequest, signal?: AbortSignal) =>
     http.patch<Brand>(`/brands/${brandId}`, body, signal),
+
+  /** DELETE /brands/:brandId */
+  remove: (brandId: string, signal?: AbortSignal) =>
+    http.delete(`/brands/${brandId}`, signal),
 };
