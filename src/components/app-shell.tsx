@@ -10,6 +10,7 @@ import {
   ChartIcon,
   CloseIcon,
   DashboardIcon,
+  FolderIcon,
   MenuIcon,
   PlusIcon,
   ReceiptIcon,
@@ -46,6 +47,7 @@ const nav: NavEntry[] = [
   },
   { label: 'Productos', href: '/productos', icon: BoxIcon },
   { label: 'Marcas', href: '/marcas', icon: TagIcon },
+  { label: 'Categorías', href: '/categorias', icon: FolderIcon },
   { label: 'Clientes', href: '/clientes', icon: UserIcon },
   {
     label: 'Diagramas',

@@ -294,6 +294,16 @@ export interface Category {
   categoryActive: boolean;
 }
 
+export interface CreateCategoryRequest {
+  categoryDescription: string;
+  categoryActive?: boolean;
+}
+
+export interface UpdateCategoryRequest {
+  categoryDescription?: string;
+  categoryActive?: boolean;
+}
+
 export interface ListCategoriesQuery {
   categoryDescription?: string;
   categoryActive?: boolean;
