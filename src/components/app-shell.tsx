@@ -101,7 +101,7 @@ function SidebarContent({ onNavigate }: { onNavigate: () => void }) {
           <ReceiptIcon className="size-5" />
         </span>
         <span className="text-base font-semibold text-slate-900 dark:text-white">
-          Ventas<span className="text-indigo-600 dark:text-indigo-400">App</span>
+          App<span className="text-indigo-600 dark:text-indigo-400">Sales</span>
         </span>
       </div>
 
@@ -127,7 +127,7 @@ function SidebarContent({ onNavigate }: { onNavigate: () => void }) {
       </nav>
 
       <div className="border-t border-slate-200 px-5 py-4 text-xs text-slate-400 dark:border-slate-800 dark:text-slate-500">
-        Sistema de ventas · v0.1
+        Michael Dev S.A.C. · v0.1
       </div>
     </div>
   );

@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'VentasApp — Sistema de ventas',
-  description: 'Gestion de ventas, productos e indicadores.',
+  title: 'AppSales — Michael Dev S.A.C.',
+  description: 'Sistema de ventas, productos e indicadores · Michael Dev S.A.C.',
 };
 
 // Fija el tema antes de pintar para evitar el parpadeo claro->oscuro.
