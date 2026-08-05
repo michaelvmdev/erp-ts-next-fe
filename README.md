@@ -2,21 +2,27 @@
 
 Frontend en Next.js para un sistema de ventas conectado al backend
 `crud-ts-nest-be`. La aplicacion cubre operaciones CRUD de catalogos,
-registro y busqueda de ventas, emision de comprobantes y analitica anual.
+registro y busqueda de ventas, emision de comprobantes y analitica de ventas.
 
 ## Funcionalidades
 
 - Dashboard con indicadores del mes actual.
-- Registro de ventas con cliente, tipo de comprobante, ubicacion y productos.
-- Busqueda de ventas por numero, tipo, cliente, fechas, importes y ordenamiento.
-- Acciones sobre comprobantes: ver detalle, descargar PDF y enviar por correo
-  cuando el backend lo permite.
-- CRUD de productos, marcas, categorias y clientes.
-- Diagramas anuales con Highcharts: ventas mensuales, ventas por ubigeo,
-  ventas por categoria y producto lider por mes.
-- Proxy interno `/api/*` hacia el backend para evitar exponer la URL real en el
-  navegador y simplificar CORS.
-- Soporte de tema claro/oscuro.
+- Registro de ventas con seleccion de cliente, tipo de comprobante, ubigeo y
+  productos; con calculo automatico de IGV y total.
+- Busqueda de ventas por numero, tipo, cliente, fechas e importes, con
+  paginacion, ordenamiento y modal de detalle.
+- Acciones sobre comprobantes: vista previa del PDF en popup, descarga y
+  envio por correo (popup con campo de destinatario).
+- CRUD completo de productos, marcas, categorias y clientes con paginacion,
+  filtros, edicion en modal, toggle activo/inactivo y eliminacion con
+  alternativa de desactivacion cuando hay conflicto (HTTP 409).
+- Diagramas de ventas anuales (total por año, grafico de columnas).
+- Diagramas de ventas mensuales con Highcharts: ventas totales, ventas por
+  ubigeo (departamento / provincia / distrito), ventas por categoria y
+  producto lider por mes.
+- Proxy interno `/api/*` hacia el backend para evitar exponer la URL real en
+  el navegador y simplificar CORS.
+- Soporte de tema claro/oscuro persistido por el sistema operativo.
 
 ## Stack
 
@@ -24,7 +30,7 @@ registro y busqueda de ventas, emision de comprobantes y analitica anual.
 - React 19
 - TypeScript
 - Tailwind CSS 4
-- Highcharts
+- Highcharts 13
 - ESLint
 
 ## Requisitos
@@ -66,40 +72,59 @@ npm run start    # sirve el build en http://localhost:3001
 npm run lint     # revision con ESLint
 ```
 
-## Rutas Principales
+## Rutas principales
 
-- `/`: dashboard.
-- `/ventas/nueva`: registrar una nueva venta.
-- `/ventas/buscar`: buscar ventas emitidas y abrir su detalle.
-- `/productos`: administrar productos.
-- `/marcas`: administrar marcas.
-- `/categorias`: administrar categorias.
-- `/clientes`: administrar clientes.
-- `/diagramas/anual`: ver analitica anual.
-- `/demo`: pantalla de demostracion.
+| Ruta | Descripcion |
+|---|---|
+| `/` | Dashboard con indicadores del mes. |
+| `/ventas/nueva` | Registrar una nueva venta. |
+| `/ventas/buscar` | Buscar ventas emitidas y abrir su detalle. |
+| `/productos` | CRUD de productos. |
+| `/marcas` | CRUD de marcas. |
+| `/categorias` | CRUD de categorias. |
+| `/clientes` | CRUD de clientes. |
+| `/diagramas/anual` | Grafico de columnas: ventas totales por año. |
+| `/diagramas/mensual` | Graficos de linea mensuales por año, ubigeo y categoria. |
 
-## Estructura Del Proyecto
+## Estructura del proyecto
 
 ```text
 src/
-  app/                 Rutas de Next.js y proxy API
-  components/          Componentes reutilizables de UI y modales
-  lib/api/             Cliente tipado para los recursos del backend
-  lib/                 Utilidades compartidas
-public/                Assets estaticos
+  app/
+    api/[...path]/    Proxy hacia el backend (route handler)
+    diagramas/
+      anual/          Diagrama de ventas anuales
+      mensual/        Diagramas de ventas mensuales
+    ventas/
+      nueva/          Nueva venta
+      buscar/         Busqueda de ventas
+    productos/        CRUD de productos
+    marcas/           CRUD de marcas
+    categorias/       CRUD de categorias
+    clientes/         CRUD de clientes
+  components/         Componentes reutilizables (modales, UI, iconos)
+  lib/
+    api/              Cliente HTTP tipado por recurso
+    format.ts         Utilidades de formato (moneda, fechas)
+    cn.ts             Utilidad classnames
+    use-theme.ts      Hook para deteccion del tema activo
+public/               Assets estaticos
 ```
 
-## Contrato Con El Backend
+## Contrato con el backend
 
 Los tipos del contrato viven en `src/lib/api/types.ts` y reflejan los DTOs del
 backend. Si cambia un endpoint o DTO en `crud-ts-nest-be`, actualiza primero ese
 archivo y luego los clientes especificos en `src/lib/api/`.
 
-El proxy acepta cualquier metodo definido en el route handler y conserva la ruta
-original:
+El proxy acepta cualquier metodo HTTP definido en el route handler y conserva
+la ruta original:
 
 ```text
-/api/brands          -> BACKEND_API_URL/brands
-/api/products/query  -> BACKEND_API_URL/products/query
-/api/sales           -> BACKEND_API_URL/sales
+/api/brands                          -> BACKEND_API_URL/brands
+/api/products/query                  -> BACKEND_API_URL/products/query
+/api/sales                           -> BACKEND_API_URL/sales
+/api/sales/:id/pdf                   -> BACKEND_API_URL/sales/:id/pdf
+/api/dashboard/yearly-sales          -> BACKEND_API_URL/dashboard/yearly-sales
+/api/dashboard/monthly-sales         -> BACKEND_API_URL/dashboard/monthly-sales
 ```

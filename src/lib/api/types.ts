@@ -314,6 +314,17 @@ export interface ListCategoriesQuery {
 
 // --- Diagramas anuales (dashboard) -------------------------------------------
 
+/** Un punto de importe por año; devuelto por /dashboard/yearly-sales. */
+export interface YearlySalesPoint {
+  year: number;
+  /** Importe total como cadena decimal, ej. "184250.00". */
+  total: string;
+}
+
+export interface YearlySalesResponse {
+  items: YearlySalesPoint[];
+}
+
 /** Un punto mensual de importe. `total` es una cadena decimal ("48250.00"). */
 export interface MonthlySalesPoint {
   month: number;

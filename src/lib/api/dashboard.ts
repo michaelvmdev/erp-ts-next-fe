@@ -3,6 +3,7 @@ import type {
   MonthlySalesByUbigeoParams,
   MonthlySalesSeries,
   TopProductByMonthSeries,
+  YearlySalesResponse,
 } from './types';
 
 /** Diagramas anuales del tablero: /dashboard/* */
@@ -41,4 +42,8 @@ export const dashboardApi = {
       { year },
       signal,
     ),
+
+  /** GET /dashboard/yearly-sales */
+  yearlySales: (signal?: AbortSignal) =>
+    http.get<YearlySalesResponse>('/dashboard/yearly-sales', undefined, signal),
 };

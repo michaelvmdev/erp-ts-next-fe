@@ -52,7 +52,10 @@ const nav: NavEntry[] = [
   {
     label: 'Diagramas',
     icon: ChartIcon,
-    children: [{ label: 'Anual', href: '/diagramas/anual', icon: ChartIcon }],
+    children: [
+      { label: 'Anual', href: '/diagramas/anual', icon: ChartIcon },
+      { label: 'Mensual', href: '/diagramas/mensual', icon: ChartIcon },
+    ],
   },
 ];
 
