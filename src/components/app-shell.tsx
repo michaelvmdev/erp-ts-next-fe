@@ -16,6 +16,7 @@ import {
   ReceiptIcon,
   SearchIcon,
   TagIcon,
+  TruckIcon,
   UserIcon,
 } from './icons';
 
@@ -49,6 +50,7 @@ const nav: NavEntry[] = [
   { label: 'Marcas', href: '/marcas', icon: TagIcon },
   { label: 'Categorías', href: '/categorias', icon: FolderIcon },
   { label: 'Clientes', href: '/clientes', icon: UserIcon },
+  { label: 'Proveedores', href: '/proveedores', icon: TruckIcon },
   {
     label: 'Diagramas',
     icon: ChartIcon,

@@ -312,6 +312,36 @@ export interface ListCategoriesQuery {
   limit?: number;
 }
 
+// --- Proveedores -------------------------------------------------------------
+
+export interface Supplier {
+  supplierId: string;
+  supplierDescription: string;
+  supplierRuc: string;
+  supplierActive: boolean;
+}
+
+export interface CreateSupplierRequest {
+  supplierDescription: string;
+  supplierRuc: string;
+  supplierActive?: boolean;
+}
+
+export interface UpdateSupplierRequest {
+  supplierDescription?: string;
+  supplierRuc?: string;
+  supplierActive?: boolean;
+}
+
+export interface ListSuppliersQuery {
+  supplierDescription?: string;
+  supplierRuc?: string;
+  supplierActive?: boolean;
+  sortDirection?: SortDirection;
+  page?: number;
+  limit?: number;
+}
+
 // --- Diagramas anuales (dashboard) -------------------------------------------
 
 /** Un punto de importe por año; devuelto por /dashboard/yearly-sales. */

@@ -19,6 +19,7 @@ import { documentTypesApi, saleTypesApi, healthApi } from './catalogs';
 import { ubigeoApi } from './ubigeo';
 import { categoriesApi } from './categories';
 import { dashboardApi } from './dashboard';
+import { suppliersApi } from './suppliers';
 
 export {
   brandsApi,
@@ -31,6 +32,7 @@ export {
   ubigeoApi,
   categoriesApi,
   dashboardApi,
+  suppliersApi,
 };
 
 /** Cliente agrupado por dominio, espejo de los recursos del backend. */
@@ -45,4 +47,5 @@ export const api = {
   ubigeo: ubigeoApi,
   categories: categoriesApi,
   dashboard: dashboardApi,
+  suppliers: suppliersApi,
 };
