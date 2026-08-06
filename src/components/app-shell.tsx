@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, type ComponentType } from 'react';
+import { useEffect, useState, type ComponentType } from 'react';
 import { cn } from '@/lib/cn';
 import { ThemeToggle } from './theme-toggle';
 import {
   BoxIcon,
   ChartIcon,
+  ChevronDownIcon,
   CloseIcon,
   DashboardIcon,
   FolderIcon,
@@ -38,6 +39,15 @@ type NavEntry = NavLink | NavGroup;
 
 function isNavGroup(entry: NavLink | NavGroup): entry is NavGroup {
   return 'children' in entry;
+}
+
+/** Devuelve true si algún hijo (o sub-hijo) del grupo coincide con el pathname. */
+function groupContainsActive(group: NavGroup, pathname: string): boolean {
+  return group.children.some((child) =>
+    isNavGroup(child)
+      ? groupContainsActive(child, pathname)
+      : (child.href === '/' ? pathname === '/' : pathname.startsWith(child.href)),
+  );
 }
 
 const nav: NavEntry[] = [
@@ -119,6 +129,7 @@ function NavItem({
   );
 }
 
+/** Subgrupo de 2.º nivel (ej. Sales / Purchases dentro de Diagramas). */
 function SubGroupItem({
   group,
   onNavigate,
@@ -126,16 +137,76 @@ function SubGroupItem({
   group: NavGroup;
   onNavigate: () => void;
 }) {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(() => groupContainsActive(group, pathname));
+
+  useEffect(() => {
+    if (groupContainsActive(group, pathname)) setOpen(true);
+  }, [pathname]);
+
   return (
     <div className="pt-0.5">
-      <div className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between px-3 py-1 text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
+      >
         {group.label}
-      </div>
-      <div className="ml-2 space-y-0.5 border-l border-slate-100 pl-2 dark:border-slate-800/80">
-        {group.children.map((link) => (
-          <NavItem key={(link as NavLink).href} link={link as NavLink} onNavigate={onNavigate} />
-        ))}
-      </div>
+        <ChevronDownIcon
+          className={cn('size-3.5 shrink-0 transition-transform duration-200', open && 'rotate-180')}
+        />
+      </button>
+      {open && (
+        <div className="ml-2 space-y-0.5 border-l border-slate-100 pl-2 dark:border-slate-800/80">
+          {group.children.map((link) => (
+            <NavItem key={(link as NavLink).href} link={link as NavLink} onNavigate={onNavigate} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Grupo de 1.º nivel (ej. Ventas, Compras, Diagramas). */
+function NavGroupItem({
+  group,
+  onNavigate,
+}: {
+  group: NavGroup;
+  onNavigate: () => void;
+}) {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(() => groupContainsActive(group, pathname));
+  const Icon = group.icon;
+
+  useEffect(() => {
+    if (groupContainsActive(group, pathname)) setOpen(true);
+  }, [pathname]);
+
+  return (
+    <div className="pt-1">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+      >
+        <Icon className="size-5 shrink-0" />
+        <span className="flex-1 text-left">{group.label}</span>
+        <ChevronDownIcon
+          className={cn('size-4 shrink-0 transition-transform duration-200', open && 'rotate-180')}
+        />
+      </button>
+      {open && (
+        <div className="ml-[1.625rem] space-y-1 border-l border-slate-200 pl-2 dark:border-slate-800">
+          {group.children.map((child) =>
+            isNavGroup(child) ? (
+              <SubGroupItem key={child.label} group={child} onNavigate={onNavigate} />
+            ) : (
+              <NavItem key={child.href} link={child} onNavigate={onNavigate} />
+            ),
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -155,21 +226,7 @@ function SidebarContent({ onNavigate }: { onNavigate: () => void }) {
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
         {nav.map((entry) =>
           isNavGroup(entry) ? (
-            <div key={entry.label} className="pt-1">
-              <div className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 dark:text-slate-400">
-                <entry.icon className="size-5 shrink-0" />
-                {entry.label}
-              </div>
-              <div className="ml-[1.625rem] space-y-1 border-l border-slate-200 pl-2 dark:border-slate-800">
-                {entry.children.map((child) =>
-                  isNavGroup(child) ? (
-                    <SubGroupItem key={child.label} group={child} onNavigate={onNavigate} />
-                  ) : (
-                    <NavItem key={child.href} link={child} onNavigate={onNavigate} />
-                  ),
-                )}
-              </div>
-            </div>
+            <NavGroupItem key={entry.label} group={entry} onNavigate={onNavigate} />
           ) : (
             <NavItem key={entry.href} link={entry} onNavigate={onNavigate} />
           ),
@@ -185,18 +242,21 @@ function SidebarContent({ onNavigate }: { onNavigate: () => void }) {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const close = () => setMobileOpen(false);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 lg:flex">
       {/* Sidebar fijo en escritorio */}
-      <aside className="hidden w-64 shrink-0 border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 lg:block">
-        <div className="sticky top-0 h-screen">
-          <SidebarContent onNavigate={close} />
-        </div>
-      </aside>
+      {!sidebarCollapsed && (
+        <aside className="hidden w-64 shrink-0 border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 lg:block">
+          <div className="sticky top-0 h-screen">
+            <SidebarContent onNavigate={close} />
+          </div>
+        </aside>
+      )}
 
-      {/* Drawer en movil */}
+      {/* Drawer en móvil */}
       {mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div
@@ -212,6 +272,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Barra superior */}
         <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-slate-200 bg-white/80 px-4 backdrop-blur dark:border-slate-800 dark:bg-slate-900/80 sm:px-6">
+          {/* Toggle sidebar en escritorio */}
+          <button
+            type="button"
+            onClick={() => setSidebarCollapsed((v) => !v)}
+            aria-label={sidebarCollapsed ? 'Mostrar menú' : 'Ocultar menú'}
+            className="hidden size-9 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 lg:inline-flex"
+          >
+            <MenuIcon className="size-5" />
+          </button>
+          {/* Abrir drawer en móvil */}
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
@@ -229,7 +299,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </main>
       </div>
 
-      {/* Boton de cierre flotante del drawer, accesible */}
+      {/* Botón de cierre flotante del drawer (móvil) */}
       {mobileOpen && (
         <button
           type="button"

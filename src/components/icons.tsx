@@ -138,6 +138,10 @@ export const ChevronRightIcon = base(
   <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />,
 );
 
+export const ChevronDownIcon = base(
+  <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />,
+);
+
 export const CashIcon = base(
   <path
     strokeLinecap="round"
