@@ -312,6 +312,70 @@ export interface ListCategoriesQuery {
   limit?: number;
 }
 
+// --- Compras -----------------------------------------------------------------
+
+export interface PurchaseLine {
+  item: number;
+  productId: string;
+  quantity: number;
+  unitPrice: number;
+  partial: number;
+}
+
+export interface Purchase {
+  purchaseId: string;
+  supplierId: string;
+  purchaseDate: string;
+  purchaseHour: string;
+  subTotal: number;
+  igv: number;
+  total: number;
+  purchaseDetails: PurchaseLine[];
+}
+
+export interface PurchaseSummary {
+  purchaseId: string;
+  supplierId: string;
+  purchaseDate: string;
+  purchaseHour: string;
+  subTotal: number;
+  igv: number;
+  total: number;
+  lineCount: number;
+}
+
+export interface PurchaseLineRequest {
+  productId: string;
+  quantity: number;
+  unitPrice: number;
+}
+
+export interface CreatePurchaseRequest {
+  supplierId: string;
+  purchaseDate?: string;
+  purchaseHour?: string;
+  purchaseDetails: PurchaseLineRequest[];
+}
+
+export interface UpdatePurchaseRequest {
+  supplierId?: string;
+  purchaseDate?: string;
+  purchaseHour?: string;
+  purchaseDetails?: PurchaseLineRequest[];
+}
+
+export interface SearchPurchasesQuery {
+  supplierId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  totalMin?: number;
+  totalMax?: number;
+  sortBy?: 'date' | 'total';
+  sortDirection?: SortDirection;
+  page?: number;
+  limit?: number;
+}
+
 // --- Proveedores -------------------------------------------------------------
 
 export interface Supplier {

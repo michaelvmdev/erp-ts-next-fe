@@ -52,6 +52,14 @@ const nav: NavEntry[] = [
   { label: 'Clientes', href: '/clientes', icon: UserIcon },
   { label: 'Proveedores', href: '/proveedores', icon: TruckIcon },
   {
+    label: 'Compras',
+    icon: TruckIcon,
+    children: [
+      { label: 'Nueva compra', href: '/compras/nueva', icon: PlusIcon },
+      { label: 'Buscar', href: '/compras/buscar', icon: SearchIcon },
+    ],
+  },
+  {
     label: 'Diagramas',
     icon: ChartIcon,
     children: [
