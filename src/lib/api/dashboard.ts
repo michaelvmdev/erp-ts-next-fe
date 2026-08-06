@@ -46,4 +46,32 @@ export const dashboardApi = {
   /** GET /dashboard/yearly-sales */
   yearlySales: (signal?: AbortSignal) =>
     http.get<YearlySalesResponse>('/dashboard/yearly-sales', undefined, signal),
+
+  /** GET /dashboard/monthly-purchases?year */
+  monthlyPurchases: (year: number, signal?: AbortSignal) =>
+    http.get<MonthlySalesSeries>('/dashboard/monthly-purchases', { year }, signal),
+
+  /** GET /dashboard/monthly-purchases-by-category?year&categoryId */
+  monthlyPurchasesByCategory: (
+    year: number,
+    categoryId: string,
+    signal?: AbortSignal,
+  ) =>
+    http.get<MonthlySalesSeries>(
+      '/dashboard/monthly-purchases-by-category',
+      { year, categoryId },
+      signal,
+    ),
+
+  /** GET /dashboard/top-purchased-product-by-month?year */
+  topPurchasedProductByMonth: (year: number, signal?: AbortSignal) =>
+    http.get<TopProductByMonthSeries>(
+      '/dashboard/top-purchased-product-by-month',
+      { year },
+      signal,
+    ),
+
+  /** GET /dashboard/yearly-purchases */
+  yearlyPurchases: (signal?: AbortSignal) =>
+    http.get<YearlySalesResponse>('/dashboard/yearly-purchases', undefined, signal),
 };

@@ -31,10 +31,14 @@ interface NavLink {
 interface NavGroup {
   label: string;
   icon: IconType;
-  children: NavLink[];
+  children: Array<NavLink | NavGroup>;
 }
 
 type NavEntry = NavLink | NavGroup;
+
+function isNavGroup(entry: NavLink | NavGroup): entry is NavGroup {
+  return 'children' in entry;
+}
 
 const nav: NavEntry[] = [
   { label: 'Dashboard', href: '/', icon: DashboardIcon },
@@ -63,8 +67,22 @@ const nav: NavEntry[] = [
     label: 'Diagramas',
     icon: ChartIcon,
     children: [
-      { label: 'Anual', href: '/diagramas/anual', icon: ChartIcon },
-      { label: 'Mensual', href: '/diagramas/mensual', icon: ChartIcon },
+      {
+        label: 'Sales',
+        icon: ChartIcon,
+        children: [
+          { label: 'Anual', href: '/diagramas/anual', icon: ChartIcon },
+          { label: 'Mensual', href: '/diagramas/mensual', icon: ChartIcon },
+        ],
+      },
+      {
+        label: 'Purchases',
+        icon: ChartIcon,
+        children: [
+          { label: 'Anual', href: '/diagramas/purchases/anual', icon: ChartIcon },
+          { label: 'Mensual', href: '/diagramas/purchases/mensual', icon: ChartIcon },
+        ],
+      },
     ],
   },
 ];
@@ -101,6 +119,27 @@ function NavItem({
   );
 }
 
+function SubGroupItem({
+  group,
+  onNavigate,
+}: {
+  group: NavGroup;
+  onNavigate: () => void;
+}) {
+  return (
+    <div className="pt-0.5">
+      <div className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+        {group.label}
+      </div>
+      <div className="ml-2 space-y-0.5 border-l border-slate-100 pl-2 dark:border-slate-800/80">
+        {group.children.map((link) => (
+          <NavItem key={(link as NavLink).href} link={link as NavLink} onNavigate={onNavigate} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function SidebarContent({ onNavigate }: { onNavigate: () => void }) {
   return (
     <div className="flex h-full flex-col">
@@ -115,17 +154,20 @@ function SidebarContent({ onNavigate }: { onNavigate: () => void }) {
 
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
         {nav.map((entry) =>
-          'children' in entry ? (
+          isNavGroup(entry) ? (
             <div key={entry.label} className="pt-1">
-              {/* Cabecera del menu (icono + nombre); los hijos van anidados. */}
               <div className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 dark:text-slate-400">
                 <entry.icon className="size-5 shrink-0" />
                 {entry.label}
               </div>
               <div className="ml-[1.625rem] space-y-1 border-l border-slate-200 pl-2 dark:border-slate-800">
-                {entry.children.map((link) => (
-                  <NavItem key={link.href} link={link} onNavigate={onNavigate} />
-                ))}
+                {entry.children.map((child) =>
+                  isNavGroup(child) ? (
+                    <SubGroupItem key={child.label} group={child} onNavigate={onNavigate} />
+                  ) : (
+                    <NavItem key={child.href} link={child} onNavigate={onNavigate} />
+                  ),
+                )}
               </div>
             </div>
           ) : (
