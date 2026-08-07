@@ -3,17 +3,26 @@
 import { useEffect, useRef } from 'react';
 import Highcharts from 'highcharts';
 
-// Guard para no inicializar el módulo dos veces (HMR).
-let mapModuleReady = false;
+// Guard para no inicializar los módulos dos veces (HMR).
+let modulesReady = false;
 
-async function ensureMapModule() {
-  if (mapModuleReady) return;
-  const mod = await import('highcharts/modules/map');
+// Algunos módulos de Highcharts exponen la función en .default, otros son la función directamente.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function initModule(mod: any) {
+  const fn = typeof mod === 'function' ? mod : typeof mod?.default === 'function' ? mod.default : null;
+  if (fn) fn(Highcharts);
+}
+
+async function ensureModules() {
+  if (modulesReady) return;
+  const [map, exporting] = await Promise.all([
+    import('highcharts/modules/map'),
+    import('highcharts/modules/exporting'),
+  ]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if (typeof (Highcharts as any).mapChart !== 'function') {
-    mod.default(Highcharts);
-  }
-  mapModuleReady = true;
+  if (typeof (Highcharts as any).mapChart !== 'function') initModule(map);
+  initModule(exporting);
+  modulesReady = true;
 }
 
 export function MapChart({ options }: { options: Highcharts.Options }) {
@@ -24,7 +33,7 @@ export function MapChart({ options }: { options: Highcharts.Options }) {
     if (!containerRef.current) return;
     let cancelled = false;
 
-    ensureMapModule().then(() => {
+    ensureModules().then(() => {
       if (cancelled || !containerRef.current) return;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       chartRef.current = (Highcharts as any).mapChart(containerRef.current, options);
