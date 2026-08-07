@@ -91,6 +91,8 @@ const nav: NavEntry[] = [
       { label: 'Prods. vendidos', href: '/ventas/productos-vendidos', icon: DocumentTextIcon },
       { label: 'Monto x cliente', href: '/ventas/monto-por-cliente', icon: DocumentTextIcon },
       { label: 'Ventas x cliente', href: '/ventas/ventas-por-cliente', icon: DocumentTextIcon },
+      { label: 'Monto x proveedor', href: '/compras/monto-por-proveedor', icon: DocumentTextIcon },
+      { label: 'Compras x proveedor', href: '/compras/compras-por-proveedor', icon: DocumentTextIcon },
     ],
   },
   {
@@ -238,7 +240,11 @@ const BOTTOM_TABS = [
   {
     label: 'Compras',
     icon: TruckIcon,
-    isActive: (p: string) => p.startsWith('/compras') || p === '/proveedores',
+    isActive: (p: string) =>
+      (p.startsWith('/compras') &&
+        !p.startsWith('/compras/monto-por-proveedor') &&
+        !p.startsWith('/compras/compras-por-proveedor')) ||
+      p === '/proveedores',
     href: '/compras/nueva',
   },
   {
@@ -248,7 +254,9 @@ const BOTTOM_TABS = [
       p.startsWith('/ventas/reporte') ||
       p.startsWith('/ventas/productos-vendidos') ||
       p.startsWith('/ventas/monto-por-cliente') ||
-      p.startsWith('/ventas/ventas-por-cliente'),
+      p.startsWith('/ventas/ventas-por-cliente') ||
+      p.startsWith('/compras/monto-por-proveedor') ||
+      p.startsWith('/compras/compras-por-proveedor'),
     href: '/ventas/reporte',
   },
 ] as const;
