@@ -1,0 +1,242 @@
+'use client';
+
+import { useEffect, useMemo, useState } from 'react';
+import type Highcharts from 'highcharts';
+import { MapChart } from '@/components/map-chart';
+import { Card, inputClass, labelClass, PageHeader } from '@/components/ui';
+import { useIsDark } from '@/lib/use-theme';
+import { formatCurrency } from '@/lib/format';
+import { RefreshIcon } from '@/components/icons';
+import { api, type Department } from '@/lib/api';
+
+const CURRENT_YEAR = new Date().getFullYear();
+const YEARS = Array.from({ length: 6 }, (_, i) => CURRENT_YEAR - i);
+
+/** Mapeo fijo: código ubigeo de departamento (2 dígitos) → hc-key del mapa de Highcharts. */
+const DEPT_TO_HCKEY: Record<string, string> = {
+  '01': 'pe-am', // Amazonas
+  '02': 'pe-an', // Ancash
+  '03': 'pe-ap', // Apurímac
+  '04': 'pe-ar', // Arequipa
+  '05': 'pe-ay', // Ayacucho
+  '06': 'pe-cj', // Cajamarca
+  '07': 'pe-cl', // Callao
+  '08': 'pe-cs', // Cusco
+  '09': 'pe-hv', // Huancavelica
+  '10': 'pe-hc', // Huánuco
+  '11': 'pe-ic', // Ica
+  '12': 'pe-ju', // Junín
+  '13': 'pe-ll', // La Libertad
+  '14': 'pe-lb', // Lambayeque
+  '15': 'pe-lr', // Lima
+  '16': 'pe-lo', // Loreto
+  '17': 'pe-md', // Madre de Dios
+  '18': 'pe-mq', // Moquegua
+  '19': 'pe-pa', // Pasco
+  '20': 'pe-pi', // Piura
+  '21': 'pe-pu', // Puno
+  '22': 'pe-sm', // San Martín
+  '23': 'pe-ta', // Tacna
+  '24': 'pe-tu', // Tumbes
+  '25': 'pe-uc', // Ucayali
+};
+
+export default function MapaPeruPage() {
+  const isDark = useIsDark();
+  const [year, setYear] = useState(CURRENT_YEAR);
+  const [refresh, setRefresh] = useState(0);
+
+  const [topology, setTopology] = useState<unknown>(null);
+  const [topoError, setTopoError] = useState<string | null>(null);
+
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [salesData, setSalesData] = useState<{ departmentId: string; name: string; total: number }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Carga el GeoJSON de Perú una sola vez desde el CDN de Highcharts.
+  useEffect(() => {
+    fetch('https://code.highcharts.com/mapdata/countries/pe/pe-all.geo.json')
+      .then((r) => r.json())
+      .then(setTopology)
+      .catch(() => setTopoError('No se pudo cargar el mapa. Verifica la conexión a internet.'));
+  }, []);
+
+  // Carga los departamentos del API una sola vez.
+  useEffect(() => {
+    const c = new AbortController();
+    api.ubigeo.departments(c.signal)
+      .then(setDepartments)
+      .catch(() => {
+        setLoading(false);
+        setError('No se pudieron cargar los departamentos. ¿Está activo el backend?');
+      });
+    return () => c.abort();
+  }, []);
+
+  // Para cada año seleccionado, obtiene ventas de todos los departamentos en paralelo.
+  useEffect(() => {
+    if (departments.length === 0) return;
+    const c = new AbortController();
+    setLoading(true);
+    setError(null);
+
+    Promise.allSettled(
+      departments.map((dept) =>
+        api.dashboard
+          .monthlySalesByUbigeo({ year, departmentId: dept.departmentId }, c.signal)
+          .then((series) => {
+            const total = series.items.reduce((sum, item) => sum + Number(item.total), 0);
+            return { departmentId: dept.departmentId, name: dept.departmentDescription, total };
+          }),
+      ),
+    ).then((results) => {
+      if (c.signal.aborted) return;
+      const data = results
+        .filter(
+          (r): r is PromiseFulfilledResult<{ departmentId: string; name: string; total: number }> =>
+            r.status === 'fulfilled',
+        )
+        .map((r) => r.value);
+      setSalesData(data);
+      if (data.length === 0) setError('No se pudieron cargar los datos. ¿Está activo el backend?');
+    }).finally(() => {
+      if (!c.signal.aborted) setLoading(false);
+    });
+
+    return () => c.abort();
+  }, [year, departments, refresh]);
+
+  const textColor = isDark ? '#cbd5e1' : '#475569';
+  const bgColor = 'transparent';
+
+  const options = useMemo((): Highcharts.Options => {
+    const mapPoints = salesData.map(({ departmentId, name, total }) => ({
+      'hc-key': DEPT_TO_HCKEY[departmentId] ?? '',
+      name,
+      value: Math.round(total * 100) / 100,
+    })).filter((p) => p['hc-key']);
+
+    return {
+      chart: {
+        map: topology,
+        backgroundColor: bgColor,
+        style: { fontFamily: 'inherit' },
+        spacing: [0, 0, 0, 0],
+      },
+      title: { text: undefined },
+      credits: { enabled: false },
+      legend: {
+        enabled: true,
+        layout: 'vertical',
+        align: 'right',
+        verticalAlign: 'bottom',
+        itemStyle: { color: textColor },
+      },
+      colorAxis: {
+        min: 0,
+        stops: [
+          [0, isDark ? '#1e2d4f' : '#dbeafe'],
+          [0.5, '#6366f1'],
+          [1, '#312e81'],
+        ],
+        labels: {
+          style: { color: textColor },
+          formatter() {
+            return `S/ ${Intl.NumberFormat('es-PE', { notation: 'compact', maximumFractionDigits: 0 }).format(Number(this.value))}`;
+          },
+        },
+      },
+      mapNavigation: {
+        enabled: true,
+        buttonOptions: {
+          alignTo: 'spacingBox',
+          align: 'left',
+          verticalAlign: 'top',
+          x: 8,
+          y: 8,
+        },
+      },
+      tooltip: {
+        formatter(this: Highcharts.Point & { value?: number }) {
+          const val = this.value ?? 0;
+          return `<b>${this.name}</b><br/>Ventas ${year}: ${formatCurrency(val)}`;
+        },
+      },
+      series: [
+        {
+          type: 'map',
+          name: `Ventas ${year}`,
+          data: mapPoints,
+          joinBy: 'hc-key',
+          nullColor: isDark ? '#1e293b' : '#e2e8f0',
+          borderColor: isDark ? '#334155' : '#94a3b8',
+          borderWidth: 0.5,
+          states: {
+            hover: { brightness: 0.2 },
+          },
+          dataLabels: {
+            enabled: false,
+          },
+        } as Highcharts.SeriesMapOptions,
+      ],
+    };
+  }, [topology, salesData, isDark, year, textColor]);
+
+  return (
+    <>
+      <PageHeader
+        title="Mapa de ventas — Perú"
+        subtitle="Total de ventas por departamento en el año seleccionado."
+        actions={
+          <div className="flex items-end gap-2">
+            <div>
+              <label className={labelClass} htmlFor="map-year">Año</label>
+              <select
+                id="map-year"
+                className={`${inputClass} !w-auto`}
+                value={year}
+                onChange={(e) => setYear(Number(e.target.value))}
+              >
+                {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
+            <button
+              type="button"
+              onClick={() => setRefresh((r) => r + 1)}
+              aria-label="Recargar"
+              title="Recargar"
+              className="inline-flex size-9 items-center justify-center rounded-lg border border-slate-300 text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            >
+              <RefreshIcon className="size-4" />
+            </button>
+          </div>
+        }
+      />
+
+      <Card className="overflow-hidden p-2">
+        {topoError ? (
+          <div className="flex h-[500px] items-center justify-center text-sm text-red-500">
+            {topoError}
+          </div>
+        ) : !topology ? (
+          <div className="flex h-[500px] flex-col items-center justify-center gap-3 text-slate-400">
+            <span className="size-8 animate-spin rounded-full border-2 border-slate-200 border-t-indigo-500 dark:border-slate-700 dark:border-t-indigo-400" />
+            <span className="text-sm">Cargando mapa…</span>
+          </div>
+        ) : loading ? (
+          <div className="flex h-[500px] flex-col items-center justify-center gap-3 text-slate-400">
+            <span className="size-8 animate-spin rounded-full border-2 border-slate-200 border-t-indigo-500 dark:border-slate-700 dark:border-t-indigo-400" />
+            <span className="text-sm">Cargando datos…</span>
+          </div>
+        ) : error ? (
+          <div className="flex h-[500px] items-center justify-center text-sm text-red-500">
+            {error}
+          </div>
+        ) : (
+          <MapChart options={options} />
+        )}
+      </Card>
+    </>
+  );
+}

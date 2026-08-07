@@ -13,6 +13,7 @@ import {
   DashboardIcon,
   DocumentTextIcon,
   FolderIcon,
+  MapPinIcon,
   MenuIcon,
   PlusIcon,
   ReceiptIcon,
@@ -79,6 +80,13 @@ const nav: NavEntry[] = [
       { label: 'Nueva compra', href: '/compras/nueva', icon: PlusIcon },
       { label: 'Buscar', href: '/compras/buscar', icon: SearchIcon },
       { label: 'Proveedores', href: '/proveedores', icon: TruckIcon },
+    ],
+  },
+  {
+    label: 'Mapas',
+    icon: MapPinIcon,
+    children: [
+      { label: 'Perú', href: '/mapas/peru', icon: MapPinIcon },
     ],
   },
   {
