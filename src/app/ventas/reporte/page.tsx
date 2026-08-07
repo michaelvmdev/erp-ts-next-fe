@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import { salesApi } from '@/lib/api';
 import { Button, Card, inputClass, labelClass, PageHeader } from '@/components/ui';
-import { CloseIcon, DownloadIcon, MailIcon } from '@/components/icons';
+import { CloseIcon, DownloadIcon, EyeIcon, MailIcon } from '@/components/icons';
 
 export default function ReporteVentasPage() {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
+
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const [emailOpen, setEmailOpen] = useState(false);
   const [email, setEmail] = useState('');
@@ -86,6 +88,10 @@ export default function ReporteVentasPage() {
               <DownloadIcon className="size-4" />
               Descargar
             </Button>
+            <Button variant="secondary" onClick={() => setPreviewOpen(true)} disabled={!datesValid}>
+              <EyeIcon className="size-4" />
+              Generar correo
+            </Button>
             <Button variant="secondary" onClick={openEmailModal} disabled={!datesValid}>
               <MailIcon className="size-4" />
               Enviar por correo
@@ -93,6 +99,56 @@ export default function ReporteVentasPage() {
           </div>
         </div>
       </Card>
+
+      {/* Modal: vista previa del reporte */}
+      {previewOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 p-4 backdrop-blur-sm"
+          onClick={(e) => { if (e.target === e.currentTarget) setPreviewOpen(false); }}
+        >
+          <div className="flex h-full max-h-[90vh] w-full max-w-4xl flex-col rounded-xl bg-white shadow-2xl dark:bg-slate-900">
+            {/* Cabecera */}
+            <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-800">
+              <div>
+                <h2 className="text-base font-semibold text-slate-900 dark:text-white">
+                  Vista previa del reporte
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {from} → {to}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="secondary" onClick={handleDownload} className="text-xs px-3 py-1.5">
+                  <DownloadIcon className="size-3.5" />
+                  Descargar
+                </Button>
+                <Button
+                  onClick={() => { setPreviewOpen(false); openEmailModal(); }}
+                  className="text-xs px-3 py-1.5"
+                >
+                  <MailIcon className="size-3.5" />
+                  Enviar por correo
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewOpen(false)}
+                  aria-label="Cerrar vista previa"
+                  className="ml-1 inline-flex size-8 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
+                >
+                  <CloseIcon className="size-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Iframe del PDF */}
+            <iframe
+              src={salesApi.reportDownloadUrl(from, to)}
+              className="min-h-0 flex-1 rounded-b-xl"
+              title="Vista previa del reporte de ventas"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Popup de correo */}
       {emailOpen && (
