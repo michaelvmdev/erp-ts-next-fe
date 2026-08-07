@@ -11,6 +11,7 @@ import {
   ChevronDownIcon,
   CloseIcon,
   DashboardIcon,
+  DocumentTextIcon,
   FolderIcon,
   MenuIcon,
   PlusIcon,
@@ -58,19 +59,26 @@ const nav: NavEntry[] = [
     children: [
       { label: 'Nueva venta', href: '/ventas/nueva', icon: PlusIcon },
       { label: 'Buscar', href: '/ventas/buscar', icon: SearchIcon },
+      { label: 'Reporte', href: '/ventas/reporte', icon: DocumentTextIcon },
+      { label: 'Clientes', href: '/clientes', icon: UserIcon },
     ],
   },
-  { label: 'Productos', href: '/productos', icon: BoxIcon },
-  { label: 'Marcas', href: '/marcas', icon: TagIcon },
-  { label: 'Categorías', href: '/categorias', icon: FolderIcon },
-  { label: 'Clientes', href: '/clientes', icon: UserIcon },
-  { label: 'Proveedores', href: '/proveedores', icon: TruckIcon },
+  {
+    label: 'Almacén',
+    icon: BoxIcon,
+    children: [
+      { label: 'Productos', href: '/productos', icon: BoxIcon },
+      { label: 'Marcas', href: '/marcas', icon: TagIcon },
+      { label: 'Categorías', href: '/categorias', icon: FolderIcon },
+    ],
+  },
   {
     label: 'Compras',
     icon: TruckIcon,
     children: [
       { label: 'Nueva compra', href: '/compras/nueva', icon: PlusIcon },
       { label: 'Buscar', href: '/compras/buscar', icon: SearchIcon },
+      { label: 'Proveedores', href: '/proveedores', icon: TruckIcon },
     ],
   },
   {

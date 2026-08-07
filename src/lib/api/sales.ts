@@ -35,4 +35,16 @@ export const salesApi = {
   /** POST /sales/:saleId/send-email (adjunta el PDF al correo) */
   sendEmail: (saleId: string, email: string, signal?: AbortSignal) =>
     http.post<SaleEmailResult>(`/sales/${saleId}/send-email`, { email }, signal),
+
+  /** URL de descarga del reporte (navegar directo para triggear el archivo) */
+  reportDownloadUrl: (from: string, to: string) =>
+    `/api/sales/report?${new URLSearchParams({ from, to })}`,
+
+  /** POST /sales/report/send-email?email=...&from=...&to=... */
+  sendReportEmail: (email: string, from: string, to: string, signal?: AbortSignal) =>
+    http.post<{ message: string }>(
+      `/sales/report/send-email?${new URLSearchParams({ email, from, to })}`,
+      undefined,
+      signal,
+    ),
 };
