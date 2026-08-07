@@ -46,14 +46,12 @@ const DEPT_TO_HCKEY: Record<string, string> = {
 
 export default function MapaPeruPage() {
   const isDark = useIsDark();
-
   const [filterMode, setFilterMode] = useState<FilterMode>('year');
   const [year, setYear] = useState(CURRENT_YEAR);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [refresh, setRefresh] = useState(0);
   const [showLabels, setShowLabels] = useState(true);
-
   const [topology, setTopology] = useState<object | null>(null);
   const [topoError, setTopoError] = useState<string | null>(null);
 
@@ -329,6 +327,21 @@ export default function MapaPeruPage() {
             </button>
 
             {/* Botón recargar */}
+            <button
+              type="button"
+              onClick={() => setShowLabels((v) => !v)}
+              aria-pressed={showLabels}
+              title={showLabels ? 'Ocultar etiquetas' : 'Mostrar etiquetas'}
+              className={cn(
+                'inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium transition',
+                showLabels
+                  ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:border-indigo-500 dark:bg-indigo-500/10 dark:text-indigo-300'
+                  : 'border-slate-300 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800',
+              )}
+            >
+              <TagIcon className="size-3.5" />
+              Etiquetas
+            </button>
             <button
               type="button"
               onClick={() => setRefresh((r) => r + 1)}
