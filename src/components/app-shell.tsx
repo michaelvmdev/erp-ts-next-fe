@@ -10,6 +10,8 @@ import {
   BoxIcon,
   ChartIcon,
   ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
   CloseIcon,
   DashboardIcon,
   DocumentTextIcon,
@@ -117,13 +119,7 @@ function isActive(pathname: string, href: string): boolean {
   return href === '/' ? pathname === '/' : pathname.startsWith(href);
 }
 
-function NavItem({
-  link,
-  onNavigate,
-}: {
-  link: NavLink;
-  onNavigate: () => void;
-}) {
+function NavItem({ link, onNavigate }: { link: NavLink; onNavigate: () => void }) {
   const pathname = usePathname();
   const active = isActive(pathname, link.href);
   const Icon = link.icon;
@@ -145,13 +141,7 @@ function NavItem({
   );
 }
 
-function SubGroupItem({
-  group,
-  onNavigate,
-}: {
-  group: NavGroup;
-  onNavigate: () => void;
-}) {
+function SubGroupItem({ group, onNavigate }: { group: NavGroup; onNavigate: () => void }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(() => groupContainsActive(group, pathname));
 
@@ -182,13 +172,7 @@ function SubGroupItem({
   );
 }
 
-function NavGroupItem({
-  group,
-  onNavigate,
-}: {
-  group: NavGroup;
-  onNavigate: () => void;
-}) {
+function NavGroupItem({ group, onNavigate }: { group: NavGroup; onNavigate: () => void }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(() => groupContainsActive(group, pathname));
   const Icon = group.icon;
@@ -225,7 +209,18 @@ function NavGroupItem({
   );
 }
 
-function SidebarContent({ onNavigate }: { onNavigate: () => void }) {
+const sidebarIconBtn =
+  'inline-flex size-7 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200';
+
+function SidebarContent({
+  onNavigate,
+  onCollapse,
+  onClose,
+}: {
+  onNavigate: () => void;
+  onCollapse?: () => void;
+  onClose?: () => void;
+}) {
   return (
     <div className="flex h-full flex-col">
       {/* Marca */}
@@ -237,14 +232,37 @@ function SidebarContent({ onNavigate }: { onNavigate: () => void }) {
           height={32}
           className="shrink-0 rounded-md"
         />
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500 leading-none">ERP</p>
           <p className="text-sm font-semibold leading-tight text-white">
             MV<span className="text-blue-400">-DEV</span>
           </p>
         </div>
+        {/* Botón ocultar — escritorio */}
+        {onCollapse && (
+          <button
+            type="button"
+            onClick={onCollapse}
+            aria-label="Ocultar menú"
+            className={sidebarIconBtn}
+          >
+            <ChevronLeftIcon className="size-4" />
+          </button>
+        )}
+        {/* Botón cerrar drawer — móvil */}
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Cerrar menú"
+            className={sidebarIconBtn}
+          >
+            <CloseIcon className="size-4" />
+          </button>
+        )}
       </div>
 
+      {/* Navegación */}
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-3">
         {nav.map((entry) =>
           isNavGroup(entry) ? (
@@ -255,8 +273,12 @@ function SidebarContent({ onNavigate }: { onNavigate: () => void }) {
         )}
       </nav>
 
-      <div className="shrink-0 border-t border-zinc-800 px-4 py-3 text-[11px] text-zinc-600">
-        Michael Dev S.A.C. · v0.1
+      {/* Footer: versión + toggle de tema */}
+      <div className="shrink-0 border-t border-zinc-800 px-3 py-3">
+        <div className="flex items-center justify-between gap-2">
+          <span className="truncate text-[11px] text-zinc-600">Michael Dev S.A.C. · v0.1</span>
+          <ThemeToggle className={sidebarIconBtn} />
+        </div>
       </div>
     </div>
   );
@@ -269,13 +291,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100 lg:flex">
-      {/* Sidebar fijo en escritorio — siempre oscuro independiente del tema */}
+      {/* Sidebar fijo en escritorio */}
       {!sidebarCollapsed && (
         <aside className="hidden w-60 shrink-0 border-r border-zinc-800 bg-zinc-950 lg:block">
           <div className="sticky top-0 h-screen">
-            <SidebarContent onNavigate={close} />
+            <SidebarContent
+              onNavigate={close}
+              onCollapse={() => setSidebarCollapsed(true)}
+            />
           </div>
         </aside>
+      )}
+
+      {/* Pull-tab para expandir sidebar — escritorio, solo cuando colapsado */}
+      {sidebarCollapsed && (
+        <button
+          type="button"
+          onClick={() => setSidebarCollapsed(false)}
+          aria-label="Mostrar menú"
+          className="fixed left-0 top-1/2 z-30 hidden -translate-y-1/2 flex-col items-center justify-center rounded-r-lg bg-zinc-900 px-1 py-3 text-zinc-400 shadow-lg ring-1 ring-zinc-700 transition hover:bg-zinc-800 hover:text-white lg:flex"
+        >
+          <ChevronRightIcon className="size-4" />
+        </button>
       )}
 
       {/* Drawer en móvil */}
@@ -286,50 +323,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             onClick={close}
           />
           <div className="absolute inset-y-0 left-0 w-60 bg-zinc-950 shadow-2xl">
-            <SidebarContent onNavigate={close} />
+            <SidebarContent onNavigate={close} onClose={close} />
           </div>
         </div>
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Barra superior */}
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-slate-200 bg-white px-4 dark:border-zinc-800 dark:bg-slate-900 sm:px-6">
-          <button
-            type="button"
-            onClick={() => setSidebarCollapsed((v) => !v)}
-            aria-label={sidebarCollapsed ? 'Mostrar menú' : 'Ocultar menú'}
-            className="hidden size-8 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-zinc-800 dark:hover:text-slate-200 lg:inline-flex"
-          >
-            <MenuIcon className="size-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setMobileOpen(true)}
-            aria-label="Abrir menu"
-            className="inline-flex size-8 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-zinc-800 dark:hover:text-slate-200 lg:hidden"
-          >
-            <MenuIcon className="size-4" />
-          </button>
-          <div className="flex-1" />
-          <ThemeToggle />
-        </header>
+        {/* Barra superior — sin botones */}
+        <header className="sticky top-0 z-30 flex h-14 items-center border-b border-slate-200 bg-white px-4 dark:border-zinc-800 dark:bg-slate-900 sm:px-6" />
 
         <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-6xl">{children}</div>
         </main>
       </div>
 
-      {/* Botón cierre del drawer (móvil) */}
-      {mobileOpen && (
-        <button
-          type="button"
-          onClick={close}
-          aria-label="Cerrar menu"
-          className="fixed right-4 top-4 z-50 inline-flex size-8 items-center justify-center rounded-md bg-zinc-800 text-zinc-300 shadow-lg transition-colors hover:bg-zinc-700 lg:hidden"
-        >
-          <CloseIcon className="size-4" />
-        </button>
-      )}
+      {/* Botón flotante para abrir menú — solo en móvil */}
+      <button
+        type="button"
+        onClick={() => setMobileOpen(true)}
+        aria-label="Abrir menú"
+        className="fixed bottom-5 left-5 z-30 inline-flex size-11 items-center justify-center rounded-full bg-zinc-900 text-white shadow-lg ring-1 ring-zinc-700 transition hover:bg-zinc-700 lg:hidden"
+      >
+        <MenuIcon className="size-5" />
+      </button>
     </div>
   );
 }

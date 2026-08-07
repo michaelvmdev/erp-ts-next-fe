@@ -24,14 +24,13 @@ const getServerSnapshot = () => null;
  * (la fija un script en el layout antes de pintar, para evitar parpadeo). Aqui
  * solo se lee esa clase, se conmuta y se persiste la eleccion.
  */
-export function ThemeToggle() {
+export function ThemeToggle({ className }: { className?: string }) {
   const isDark = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   function toggle() {
     const next = !document.documentElement.classList.contains('dark');
     document.documentElement.classList.toggle('dark', next);
     localStorage.setItem('theme', next ? 'dark' : 'light');
-    // El MutationObserver se encarga de re-renderizar.
   }
 
   return (
@@ -39,15 +38,17 @@ export function ThemeToggle() {
       type="button"
       onClick={toggle}
       aria-label={isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
-      className="inline-flex size-9 items-center justify-center rounded-lg border border-slate-300 text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+      className={
+        className ??
+        'inline-flex size-8 items-center justify-center rounded-md border border-slate-300 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-zinc-800 dark:hover:text-slate-200'
+      }
     >
-      {/* Antes de hidratar no se sabe el tema: se reserva el hueco sin icono. */}
       {isDark === null ? (
-        <span className="size-5" />
+        <span className="size-4" />
       ) : isDark ? (
-        <SunIcon className="size-5" />
+        <SunIcon className="size-4" />
       ) : (
-        <MoonIcon className="size-5" />
+        <MoonIcon className="size-4" />
       )}
     </button>
   );
