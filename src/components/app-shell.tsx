@@ -62,8 +62,6 @@ const nav: NavEntry[] = [
     children: [
       { label: 'Nueva venta', href: '/ventas/nueva', icon: PlusIcon },
       { label: 'Buscar', href: '/ventas/buscar', icon: SearchIcon },
-      { label: 'Reporte', href: '/ventas/reporte', icon: DocumentTextIcon },
-      { label: 'Prods. vendidos', href: '/ventas/productos-vendidos', icon: DocumentTextIcon },
       { label: 'Clientes', href: '/clientes', icon: UserIcon },
     ],
   },
@@ -83,6 +81,14 @@ const nav: NavEntry[] = [
       { label: 'Nueva compra', href: '/compras/nueva', icon: PlusIcon },
       { label: 'Buscar', href: '/compras/buscar', icon: SearchIcon },
       { label: 'Proveedores', href: '/proveedores', icon: TruckIcon },
+    ],
+  },
+  {
+    label: 'Reportes',
+    icon: DocumentTextIcon,
+    children: [
+      { label: 'Ventas', href: '/ventas/reporte', icon: DocumentTextIcon },
+      { label: 'Prods. vendidos', href: '/ventas/productos-vendidos', icon: DocumentTextIcon },
     ],
   },
   {
