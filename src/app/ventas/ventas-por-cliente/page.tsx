@@ -2,9 +2,10 @@
 
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { ApiError, salesApi, type SalePdf } from '@/lib/api';
+import { ApiError, clientsApi, salesApi, type Client, type SalePdf } from '@/lib/api';
 import { Button, Card, inputClass, labelClass, PageHeader } from '@/components/ui';
-import { CloseIcon, DownloadIcon, EyeIcon, MailIcon } from '@/components/icons';
+import { CloseIcon, DownloadIcon, EyeIcon, MailIcon, SearchIcon } from '@/components/icons';
+import { PickerModal } from '@/components/picker-modal';
 
 function base64ToBlob(base64: string, type: string): Blob {
   const binary = atob(base64);
@@ -26,8 +27,10 @@ function triggerDownload(pdf: SalePdf) {
 }
 
 export default function VentasClientePage() {
+  const [client, setClient] = useState<Client | null>(null);
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
+  const [clientModalOpen, setClientModalOpen] = useState(false);
 
   const [pdf, setPdf] = useState<SalePdf | null>(null);
   const [loadingPdf, setLoadingPdf] = useState(false);
@@ -40,16 +43,18 @@ export default function VentasClientePage() {
   const [sendResult, setSendResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
   const datesValid = !!from && !!to && from <= to;
+  const formValid = !!client && datesValid;
   const dateError = from && to && from > to ? 'La fecha de inicio no puede ser mayor que la de fin.' : null;
 
-  useEffect(() => { setPdf(null); setPdfError(null); }, [from, to]);
+  useEffect(() => { setPdf(null); setPdfError(null); }, [client, from, to]);
 
   async function fetchPdf(): Promise<SalePdf | null> {
     if (pdf) return pdf;
+    if (!client) return null;
     setLoadingPdf(true);
     setPdfError(null);
     try {
-      const res = await salesApi.salesByClientReport(from, to);
+      const res = await salesApi.salesByClientReport(client.clientId, from, to);
       setPdf(res);
       return res;
     } catch (err) {
@@ -81,11 +86,11 @@ export default function VentasClientePage() {
   }
 
   async function handleSendEmail() {
-    if (!email.trim() || !datesValid) return;
+    if (!email.trim() || !formValid) return;
     setSending(true);
     setSendResult(null);
     try {
-      await salesApi.sendSalesByClientReportEmail(email.trim(), from, to);
+      await salesApi.sendSalesByClientReportEmail(email.trim(), client!.clientId, from, to);
       setSendResult({ ok: true, msg: 'Reporte enviado correctamente.' });
     } catch (err) {
       setSendResult({
@@ -101,11 +106,36 @@ export default function VentasClientePage() {
     <>
       <PageHeader
         title="Ventas por cliente"
-        subtitle="Reporte del número y detalle de ventas agrupadas por cliente en un rango de fechas."
+        subtitle="Reporte de ventas de un cliente específico en un rango de fechas."
       />
 
       <Card className="max-w-md p-6">
         <div className="space-y-5">
+          {/* Selector de cliente */}
+          <div>
+            <p className={labelClass}>Cliente</p>
+            <button
+              type="button"
+              onClick={() => setClientModalOpen(true)}
+              className="mt-1 flex w-full items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left transition hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600"
+            >
+              <SearchIcon className="size-4 shrink-0 text-slate-400" />
+              {client ? (
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-slate-900 dark:text-white">
+                    {client.clientDescription}
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Doc. {client.documentNumber}
+                  </p>
+                </div>
+              ) : (
+                <span className="text-sm text-slate-400">Seleccionar cliente…</span>
+              )}
+            </button>
+          </div>
+
+          {/* Fechas */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className={labelClass} htmlFor="vc-from">Desde</label>
@@ -133,16 +163,17 @@ export default function VentasClientePage() {
             <p className="text-sm text-red-500 dark:text-red-400">{dateError}</p>
           )}
 
+          {/* Acciones */}
           <div className="flex flex-wrap gap-3 pt-1">
-            <Button onClick={handleDownload} disabled={!datesValid || loadingPdf}>
+            <Button onClick={handleDownload} disabled={!formValid || loadingPdf}>
               <DownloadIcon className="size-4" />
               {loadingPdf ? 'Generando…' : 'Descargar'}
             </Button>
-            <Button variant="secondary" onClick={handlePreview} disabled={!datesValid || loadingPdf}>
+            <Button variant="secondary" onClick={handlePreview} disabled={!formValid || loadingPdf}>
               <EyeIcon className="size-4" />
               Vista previa
             </Button>
-            <Button variant="secondary" onClick={openEmailModal} disabled={!datesValid}>
+            <Button variant="secondary" onClick={openEmailModal} disabled={!formValid}>
               <MailIcon className="size-4" />
               Enviar por correo
             </Button>
@@ -154,11 +185,13 @@ export default function VentasClientePage() {
         </div>
       </Card>
 
+      {/* Modal: vista previa */}
       {previewOpen && (
         <PreviewModal
           pdf={pdf}
           loading={loadingPdf}
           error={pdfError}
+          client={client}
           dateRange={{ from, to }}
           onDownload={() => pdf && triggerDownload(pdf)}
           onEmail={() => { setPreviewOpen(false); openEmailModal(); }}
@@ -166,6 +199,7 @@ export default function VentasClientePage() {
         />
       )}
 
+      {/* Modal: correo */}
       {emailOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm"
@@ -188,7 +222,11 @@ export default function VentasClientePage() {
 
             <div className="space-y-4 px-5 py-5">
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                Reporte del{' '}
+                Ventas de{' '}
+                <span className="font-medium text-slate-700 dark:text-slate-200">
+                  {client?.clientDescription}
+                </span>
+                {' '}del{' '}
                 <span className="font-medium text-slate-700 dark:text-slate-200">{from}</span>
                 {' '}al{' '}
                 <span className="font-medium text-slate-700 dark:text-slate-200">{to}</span>.
@@ -228,6 +266,34 @@ export default function VentasClientePage() {
           </div>
         </div>
       )}
+
+      {/* Modal: búsqueda de cliente */}
+      <PickerModal<Client>
+        open={clientModalOpen}
+        title="Buscar cliente"
+        searchPlaceholder="Nombre o número de documento…"
+        headers={['Cliente', 'Documento']}
+        getKey={(c) => c.clientId}
+        renderCells={(c) => [c.clientDescription, c.documentNumber]}
+        fetchPage={(q, page, signal) => {
+          const onlyDigits = /^\d+$/.test(q);
+          return clientsApi.list(
+            {
+              clientDescription: !onlyDigits && q ? q : undefined,
+              documentNumber: onlyDigits && q ? q : undefined,
+              clientActive: true,
+              page,
+              limit: 5,
+            },
+            signal,
+          );
+        }}
+        onSelect={(c) => {
+          setClient(c);
+          setClientModalOpen(false);
+        }}
+        onClose={() => setClientModalOpen(false)}
+      />
     </>
   );
 }
@@ -236,6 +302,7 @@ function PreviewModal({
   pdf,
   loading,
   error,
+  client,
   dateRange,
   onDownload,
   onEmail,
@@ -244,6 +311,7 @@ function PreviewModal({
   pdf: SalePdf | null;
   loading: boolean;
   error: string | null;
+  client: Client | null;
   dateRange: { from: string; to: string };
   onDownload: () => void;
   onEmail: () => void;
@@ -277,8 +345,12 @@ function PreviewModal({
           <div className="flex items-center gap-3">
             <Image src="/erp-mv-dev-logo.svg" alt="ERP MV-DEV" width={28} height={28} className="shrink-0 rounded" />
             <div>
-              <h2 className="text-base font-semibold text-slate-900 dark:text-white">Ventas por cliente</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">{dateRange.from} → {dateRange.to}</p>
+              <h2 className="text-base font-semibold text-slate-900 dark:text-white">
+                {client?.clientDescription ?? 'Ventas por cliente'}
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {dateRange.from} → {dateRange.to}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">

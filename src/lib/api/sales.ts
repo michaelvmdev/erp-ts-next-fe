@@ -72,14 +72,14 @@ export const salesApi = {
       signal,
     ),
 
-  /** GET /sales/sales-by-client-report?from=...&to=... */
-  salesByClientReport: (from: string, to: string, signal?: AbortSignal) =>
-    http.get<SalePdf>('/sales/sales-by-client-report', { from, to }, signal),
+  /** GET /sales/sales-by-client-report?clientId=UUID&from=...&to=... */
+  salesByClientReport: (clientId: string, from: string, to: string, signal?: AbortSignal) =>
+    http.get<SalePdf>('/sales/sales-by-client-report', { clientId, from, to }, signal),
 
-  /** POST /sales/sales-by-client-report/send-email?email=...&from=...&to=... */
-  sendSalesByClientReportEmail: (email: string, from: string, to: string, signal?: AbortSignal) =>
+  /** POST /sales/sales-by-client-report/send-email?email=...&clientId=UUID&from=...&to=... */
+  sendSalesByClientReportEmail: (email: string, clientId: string, from: string, to: string, signal?: AbortSignal) =>
     http.post<{ message: string }>(
-      `/sales/sales-by-client-report/send-email?${new URLSearchParams({ email, from, to })}`,
+      `/sales/sales-by-client-report/send-email?${new URLSearchParams({ email, clientId, from, to })}`,
       undefined,
       signal,
     ),
