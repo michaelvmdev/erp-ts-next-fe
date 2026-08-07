@@ -6,7 +6,8 @@ import { MapChart } from '@/components/map-chart';
 import { Card, inputClass, labelClass, PageHeader } from '@/components/ui';
 import { useIsDark } from '@/lib/use-theme';
 import { formatCurrency } from '@/lib/format';
-import { RefreshIcon } from '@/components/icons';
+import { cn } from '@/lib/cn';
+import { RefreshIcon, TagIcon } from '@/components/icons';
 import { api, type Department } from '@/lib/api';
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -45,6 +46,7 @@ export default function MapaPeruPage() {
   const isDark = useIsDark();
   const [year, setYear] = useState(CURRENT_YEAR);
   const [refresh, setRefresh] = useState(0);
+  const [showLabels, setShowLabels] = useState(false);
 
   const [topology, setTopology] = useState<unknown>(null);
   const [topoError, setTopoError] = useState<string | null>(null);
@@ -176,12 +178,25 @@ export default function MapaPeruPage() {
             hover: { brightness: 0.2 },
           },
           dataLabels: {
-            enabled: false,
+            enabled: showLabels,
+            formatter(this: Highcharts.Point & { value?: number }) {
+              const val = this.value ?? 0;
+              if (val === 0) return '';
+              if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M`;
+              if (val >= 1_000) return `${(val / 1_000).toFixed(0)}K`;
+              return `${Math.round(val)}`;
+            },
+            style: {
+              fontSize: '10px',
+              fontWeight: 'normal',
+              color: isDark ? '#e2e8f0' : '#1e293b',
+              textOutline: isDark ? '2px #0f172a' : '2px #ffffff',
+            },
           },
         } as Highcharts.SeriesMapOptions,
       ],
     };
-  }, [topology, salesData, isDark, year, textColor]);
+  }, [topology, salesData, isDark, year, textColor, showLabels]);
 
   return (
     <>
@@ -201,6 +216,21 @@ export default function MapaPeruPage() {
                 {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
               </select>
             </div>
+            <button
+              type="button"
+              onClick={() => setShowLabels((v) => !v)}
+              aria-pressed={showLabels}
+              title={showLabels ? 'Ocultar etiquetas' : 'Mostrar etiquetas'}
+              className={cn(
+                'inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium transition',
+                showLabels
+                  ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:border-indigo-500 dark:bg-indigo-500/10 dark:text-indigo-300'
+                  : 'border-slate-300 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800',
+              )}
+            >
+              <TagIcon className="size-3.5" />
+              Etiquetas
+            </button>
             <button
               type="button"
               onClick={() => setRefresh((r) => r + 1)}
