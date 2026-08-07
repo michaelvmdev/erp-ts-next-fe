@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, type ComponentType } from 'react';
@@ -229,9 +230,13 @@ function SidebarContent({ onNavigate }: { onNavigate: () => void }) {
     <div className="flex h-full flex-col">
       {/* Marca */}
       <div className="flex h-14 shrink-0 items-center gap-3 border-b border-zinc-800 px-4">
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-blue-600 text-[11px] font-bold tracking-wide text-white">
-          MV
-        </span>
+        <Image
+          src="/erp-mv-dev-logo.svg"
+          alt="ERP MV-DEV"
+          width={32}
+          height={32}
+          className="shrink-0 rounded-md"
+        />
         <div className="min-w-0">
           <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500 leading-none">ERP</p>
           <p className="text-sm font-semibold leading-tight text-white">

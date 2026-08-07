@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { ApiError, api, type SaleEmailResult, type SalePdf } from '@/lib/api';
 import { Button, inputClass, labelClass } from './ui';
@@ -169,9 +170,18 @@ function PdfPreviewModal({
         className="relative z-10 flex h-[85vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900"
       >
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-3 dark:border-slate-800">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-white">
-            Vista previa{pdf?.fileName ? ` · ${pdf.fileName}` : ''}
-          </h2>
+          <div className="flex items-center gap-2">
+            <Image
+              src="/erp-mv-dev-logo.svg"
+              alt="ERP MV-DEV"
+              width={24}
+              height={24}
+              className="shrink-0 rounded"
+            />
+            <h2 className="text-base font-semibold text-slate-900 dark:text-white">
+              Vista previa{pdf?.fileName ? ` · ${pdf.fileName}` : ''}
+            </h2>
+          </div>
           <div className="flex items-center gap-2">
             <Button variant="secondary" onClick={onDownload} disabled={!pdf}>
               <DownloadIcon className="size-4" />

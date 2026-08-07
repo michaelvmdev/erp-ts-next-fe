@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'ERP MV-DEV — Michael Dev S.A.C.',
   description: 'Sistema ERP de ventas, compras e indicadores · Michael Dev S.A.C.',
+  icons: {
+    icon: '/erp-mv-dev.ico',
+  },
 };
 
 // Fija el tema antes de pintar para evitar el parpadeo claro->oscuro.

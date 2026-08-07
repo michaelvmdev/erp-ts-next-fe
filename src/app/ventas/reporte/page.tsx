@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { ApiError, salesApi, type SalePdf } from '@/lib/api';
 import { Button, Card, inputClass, labelClass, PageHeader } from '@/components/ui';
@@ -279,13 +280,22 @@ function PreviewModal({
       >
         {/* Cabecera */}
         <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-3 dark:border-slate-800">
-          <div>
-            <h2 className="text-base font-semibold text-slate-900 dark:text-white">
-              Vista previa del reporte
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              {dateRange.from} → {dateRange.to}
-            </p>
+          <div className="flex items-center gap-3">
+            <Image
+              src="/erp-mv-dev-logo.svg"
+              alt="ERP MV-DEV"
+              width={28}
+              height={28}
+              className="shrink-0 rounded"
+            />
+            <div>
+              <h2 className="text-base font-semibold text-slate-900 dark:text-white">
+                Vista previa del reporte
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {dateRange.from} → {dateRange.to}
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="secondary" onClick={onDownload} disabled={!pdf}>
