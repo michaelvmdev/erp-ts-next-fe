@@ -195,7 +195,7 @@ function PdfPreviewModal({
         <div className="flex-1 bg-slate-100 dark:bg-slate-950">
           {loading ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 text-slate-400">
-              <span className="size-8 animate-spin rounded-full border-2 border-slate-300 border-t-indigo-500 dark:border-slate-700 dark:border-t-indigo-400" />
+              <span className="size-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-500 dark:border-slate-700 dark:border-t-blue-400" />
               <span className="text-sm">Generando PDF…</span>
             </div>
           ) : error ? (

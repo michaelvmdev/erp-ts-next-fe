@@ -240,7 +240,7 @@ export default function ProveedoresPage() {
                           }}
                           aria-label="Editar"
                           title="Editar"
-                          className="inline-flex size-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800"
+                          className="inline-flex size-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800"
                         >
                           <PencilIcon className="size-4" />
                         </button>
@@ -448,7 +448,7 @@ function SupplierFormModal({
             <label className="flex cursor-pointer items-center gap-3">
               <input
                 type="checkbox"
-                className="size-4 rounded accent-indigo-600"
+                className="size-4 rounded accent-blue-600"
                 checked={active}
                 onChange={(e) => setActive(e.target.checked)}
               />

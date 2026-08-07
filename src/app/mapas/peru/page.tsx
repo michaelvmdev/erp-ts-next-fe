@@ -176,9 +176,9 @@ export default function MapaPeruPage() {
       colorAxis: {
         min: 0,
         stops: [
-          [0, isDark ? '#1e2d4f' : '#dbeafe'],
-          [0.5, '#6366f1'],
-          [1, '#312e81'],
+          [0, isDark ? '#172554' : '#dbeafe'],
+          [0.5, '#3b82f6'],
+          [1, '#1e40af'],
         ],
         labels: {
           style: { color: textColor },
@@ -262,7 +262,7 @@ export default function MapaPeruPage() {
                   className={cn(
                     'h-9 px-3 text-sm font-medium transition',
                     filterMode === m
-                      ? 'bg-indigo-600 text-white'
+                      ? 'bg-blue-700 text-white'
                       : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800',
                   )}
                 >
@@ -318,7 +318,7 @@ export default function MapaPeruPage() {
               className={cn(
                 'inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium transition',
                 showLabels
-                  ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:border-indigo-500 dark:bg-indigo-500/10 dark:text-indigo-300'
+                  ? 'border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-500 dark:bg-blue-500/10 dark:text-blue-300'
                   : 'border-slate-300 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800',
               )}
             >
@@ -335,7 +335,7 @@ export default function MapaPeruPage() {
               className={cn(
                 'inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium transition',
                 showLabels
-                  ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:border-indigo-500 dark:bg-indigo-500/10 dark:text-indigo-300'
+                  ? 'border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-500 dark:bg-blue-500/10 dark:text-blue-300'
                   : 'border-slate-300 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800',
               )}
             >
@@ -363,12 +363,12 @@ export default function MapaPeruPage() {
             </div>
           ) : !topology ? (
             <div className="flex h-[500px] flex-col items-center justify-center gap-3 text-slate-400">
-              <span className="size-8 animate-spin rounded-full border-2 border-slate-200 border-t-indigo-500 dark:border-slate-700 dark:border-t-indigo-400" />
+              <span className="size-8 animate-spin rounded-full border-2 border-slate-200 border-t-blue-600 dark:border-slate-700 dark:border-t-blue-500" />
               <span className="text-sm">Cargando mapa…</span>
             </div>
           ) : loading ? (
             <div className="flex h-[500px] flex-col items-center justify-center gap-3 text-slate-400">
-              <span className="size-8 animate-spin rounded-full border-2 border-slate-200 border-t-indigo-500 dark:border-slate-700 dark:border-t-indigo-400" />
+              <span className="size-8 animate-spin rounded-full border-2 border-slate-200 border-t-blue-600 dark:border-slate-700 dark:border-t-blue-500" />
               <span className="text-sm">Cargando datos…</span>
             </div>
           ) : error ? (

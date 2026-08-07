@@ -107,7 +107,7 @@ export function SaleDetailModal({
         <div className="flex-1 overflow-y-auto p-5">
           {loading ? (
             <div className="flex h-40 flex-col items-center justify-center gap-3 text-slate-400">
-              <span className="size-8 animate-spin rounded-full border-2 border-slate-200 border-t-indigo-500 dark:border-slate-700 dark:border-t-indigo-400" />
+              <span className="size-8 animate-spin rounded-full border-2 border-slate-200 border-t-blue-500 dark:border-slate-700 dark:border-t-blue-400" />
               <span className="text-sm">Cargando…</span>
             </div>
           ) : error ? (

@@ -25,7 +25,7 @@ const cards: CardDef[] = [
     hint: 'Comprobantes emitidos',
     icon: ReceiptIcon,
     iconWrap:
-      'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400',
+      'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400',
     format: (v) => number.format(v),
   },
   {

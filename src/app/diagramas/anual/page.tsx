@@ -104,7 +104,7 @@ function ChartFrame({
       ) : loading ? (
         <div className="flex h-80 w-full flex-col items-center justify-center gap-3 text-slate-400 dark:text-slate-500">
           <span
-            className="size-8 animate-spin rounded-full border-2 border-slate-200 border-t-indigo-500 dark:border-slate-700 dark:border-t-indigo-400"
+            className="size-8 animate-spin rounded-full border-2 border-slate-200 border-t-blue-500 dark:border-slate-700 dark:border-t-blue-400"
             role="status"
             aria-label="Cargando"
           />

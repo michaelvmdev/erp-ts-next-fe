@@ -65,8 +65,8 @@ export default function DashboardPage() {
             const Icon = action.icon;
             return (
               <Link key={action.href} href={action.href} className="group">
-                <Card className="flex h-full flex-col gap-3 p-5 transition group-hover:border-indigo-300 group-hover:shadow-md dark:group-hover:border-indigo-700">
-                  <span className="flex size-11 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 transition group-hover:bg-indigo-600 group-hover:text-white dark:bg-indigo-500/10 dark:text-indigo-400">
+                <Card className="flex h-full flex-col gap-3 p-5 transition group-hover:border-blue-300 group-hover:shadow-md dark:group-hover:border-blue-700">
+                  <span className="flex size-11 items-center justify-center rounded-lg bg-blue-50 text-blue-600 transition group-hover:bg-blue-600 group-hover:text-white dark:bg-blue-500/10 dark:text-blue-400">
                     <Icon className="size-6" />
                   </span>
                   <div>

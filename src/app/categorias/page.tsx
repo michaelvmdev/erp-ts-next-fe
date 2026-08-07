@@ -222,7 +222,7 @@ export default function CategoriasPage() {
                           }}
                           aria-label="Editar"
                           title="Editar"
-                          className="inline-flex size-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800"
+                          className="inline-flex size-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800"
                         >
                           <PencilIcon className="size-4" />
                         </button>
@@ -424,7 +424,7 @@ function CategoryFormModal({
           <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
             <input
               type="checkbox"
-              className="size-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800"
+              className="size-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800"
               checked={active}
               onChange={(e) => setActive(e.target.checked)}
             />

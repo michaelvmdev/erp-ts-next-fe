@@ -338,7 +338,7 @@ export default function BuscarComprasPage() {
                         onClick={() => setDetailId(p.purchaseId)}
                         aria-label="Ver detalle"
                         title="Ver detalle"
-                        className="inline-flex size-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800"
+                        className="inline-flex size-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800"
                       >
                         <EyeIcon className="size-4" />
                       </button>

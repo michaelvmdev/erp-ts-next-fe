@@ -25,7 +25,7 @@ import {
 const IGV_RATE = 0.18;
 
 const searchIconButtonClass =
-  'inline-flex size-[38px] shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800';
+  'inline-flex size-[38px] shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800';
 
 interface LineItem {
   product: Product;
@@ -215,7 +215,7 @@ export default function NuevaCompraPage() {
           {/* Proveedor */}
           <Card className="p-6">
             <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
-              <TruckIcon className="size-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
+              <TruckIcon className="size-4 shrink-0 text-blue-600 dark:text-blue-400" />
               Proveedor
             </h2>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -264,7 +264,7 @@ export default function NuevaCompraPage() {
           {/* Productos */}
           <Card className="p-6">
             <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
-              <BoxIcon className="size-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
+              <BoxIcon className="size-4 shrink-0 text-blue-600 dark:text-blue-400" />
               Productos
             </h2>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end">

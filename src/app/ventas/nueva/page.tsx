@@ -43,7 +43,7 @@ function isRuc(client: Client): boolean {
 // No se usa `Button` porque `cn()` no resuelve conflictos de Tailwind y su
 // `px-4` base terminaria aplastando el icono.
 const searchIconButtonClass =
-  'inline-flex size-[38px] shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800';
+  'inline-flex size-[38px] shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800';
 
 interface LineItem {
   product: Product;
@@ -312,7 +312,7 @@ export default function NuevaVentaPage() {
           {/* Cliente */}
           <Card className="p-6">
             <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
-              <UserIcon className="size-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
+              <UserIcon className="size-4 shrink-0 text-blue-600 dark:text-blue-400" />
               Cliente
             </h2>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -357,7 +357,7 @@ export default function NuevaVentaPage() {
           {/* Tipo de comprobante */}
           <Card className="p-6">
             <h2 className="mb-1 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
-              <ReceiptIcon className="size-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
+              <ReceiptIcon className="size-4 shrink-0 text-blue-600 dark:text-blue-400" />
               Tipo de comprobante
             </h2>
             <p className="mb-4 text-xs text-slate-500 dark:text-slate-400">
@@ -391,7 +391,7 @@ export default function NuevaVentaPage() {
                       'flex min-w-32 flex-col items-start rounded-lg border px-4 py-3 text-left transition',
                       disabled && 'cursor-not-allowed opacity-40',
                       active
-                        ? 'border-indigo-600 bg-indigo-50 ring-1 ring-indigo-600 dark:border-indigo-500 dark:bg-indigo-500/10'
+                        ? 'border-blue-600 bg-blue-50 ring-1 ring-blue-600 dark:border-blue-500 dark:bg-blue-500/10'
                         : 'border-slate-300 hover:border-slate-400 dark:border-slate-700 dark:hover:border-slate-600',
                     )}
                   >
@@ -410,7 +410,7 @@ export default function NuevaVentaPage() {
           {/* Ubicacion */}
           <Card className="p-6">
             <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
-              <MapPinIcon className="size-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
+              <MapPinIcon className="size-4 shrink-0 text-blue-600 dark:text-blue-400" />
               Ubicacion (distrito)
             </h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -474,7 +474,7 @@ export default function NuevaVentaPage() {
           {/* Productos */}
           <Card className="p-6">
             <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
-              <BoxIcon className="size-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
+              <BoxIcon className="size-4 shrink-0 text-blue-600 dark:text-blue-400" />
               Productos
             </h2>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
@@ -739,7 +739,7 @@ function ProductDetail({ product }: { product: Product }) {
         <p className="font-medium text-slate-800 dark:text-slate-100">
           {product.productName}
         </p>
-        <p className="mt-0.5 font-semibold text-indigo-600 dark:text-indigo-400">
+        <p className="mt-0.5 font-semibold text-blue-600 dark:text-blue-400">
           {formatCurrency(product.productUnitPrice)}
         </p>
         <p className="mt-2 text-slate-600 dark:text-slate-300">
