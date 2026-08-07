@@ -48,7 +48,7 @@ export default function MapaPeruPage() {
   const [refresh, setRefresh] = useState(0);
   const [showLabels, setShowLabels] = useState(false);
 
-  const [topology, setTopology] = useState<unknown>(null);
+  const [topology, setTopology] = useState<object | null>(null);
   const [topoError, setTopoError] = useState<string | null>(null);
 
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -121,7 +121,7 @@ export default function MapaPeruPage() {
 
     return {
       chart: {
-        map: topology,
+        map: topology ?? undefined,
         backgroundColor: bgColor,
         style: { fontFamily: 'inherit' },
         spacing: [0, 0, 0, 0],
@@ -156,13 +156,13 @@ export default function MapaPeruPage() {
           align: 'left',
           verticalAlign: 'top',
           x: 8,
-          y: 8,
         },
       },
       tooltip: {
-        formatter(this: Highcharts.Point & { value?: number }) {
-          const val = this.value ?? 0;
-          return `<b>${this.name}</b><br/>Ventas ${year}: ${formatCurrency(val)}`;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        formatter(this: any) {
+          const val = (this.point?.value ?? this.value) ?? 0;
+          return `<b>${this.point?.name ?? this.name}</b><br/>Ventas ${year}: ${formatCurrency(val)}`;
         },
       },
       series: [

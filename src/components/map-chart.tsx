@@ -11,7 +11,8 @@ async function ensureMapModule() {
   const mod = await import('highcharts/modules/map');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (typeof (Highcharts as any).mapChart !== 'function') {
-    mod.default(Highcharts);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (mod.default as unknown as (h: typeof Highcharts) => void)(Highcharts);
   }
   mapModuleReady = true;
 }
