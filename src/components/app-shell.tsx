@@ -89,6 +89,8 @@ const nav: NavEntry[] = [
     children: [
       { label: 'Ventas', href: '/ventas/reporte', icon: DocumentTextIcon },
       { label: 'Prods. vendidos', href: '/ventas/productos-vendidos', icon: DocumentTextIcon },
+      { label: 'Monto x cliente', href: '/ventas/monto-por-cliente', icon: DocumentTextIcon },
+      { label: 'Ventas x cliente', href: '/ventas/ventas-por-cliente', icon: DocumentTextIcon },
     ],
   },
   {
@@ -227,7 +229,9 @@ const BOTTOM_TABS = [
     isActive: (p: string) =>
       (p.startsWith('/ventas') &&
         !p.startsWith('/ventas/reporte') &&
-        !p.startsWith('/ventas/productos-vendidos')) ||
+        !p.startsWith('/ventas/productos-vendidos') &&
+        !p.startsWith('/ventas/monto-por-cliente') &&
+        !p.startsWith('/ventas/ventas-por-cliente')) ||
       p === '/clientes',
     href: '/ventas/nueva',
   },
@@ -241,7 +245,10 @@ const BOTTOM_TABS = [
     label: 'Reportes',
     icon: DocumentTextIcon,
     isActive: (p: string) =>
-      p.startsWith('/ventas/reporte') || p.startsWith('/ventas/productos-vendidos'),
+      p.startsWith('/ventas/reporte') ||
+      p.startsWith('/ventas/productos-vendidos') ||
+      p.startsWith('/ventas/monto-por-cliente') ||
+      p.startsWith('/ventas/ventas-por-cliente'),
     href: '/ventas/reporte',
   },
 ] as const;
