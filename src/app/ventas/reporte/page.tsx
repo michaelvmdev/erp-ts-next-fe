@@ -1,16 +1,38 @@
 'use client';
 
-import { useState } from 'react';
-import { salesApi } from '@/lib/api';
+import { useEffect, useState } from 'react';
+import { ApiError, salesApi, type SalePdf } from '@/lib/api';
 import { Button, Card, inputClass, labelClass, PageHeader } from '@/components/ui';
 import { CloseIcon, DownloadIcon, EyeIcon, MailIcon } from '@/components/icons';
+
+function base64ToBlob(base64: string, type: string): Blob {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], { type });
+}
+
+function triggerDownload(pdf: SalePdf) {
+  const blob = base64ToBlob(pdf.base64, pdf.mimeType || 'application/pdf');
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = pdf.fileName || 'reporte-ventas.pdf';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
 
 export default function ReporteVentasPage() {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
 
-  const [previewOpen, setPreviewOpen] = useState(false);
+  const [pdf, setPdf] = useState<SalePdf | null>(null);
+  const [loadingPdf, setLoadingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [emailOpen, setEmailOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [sending, setSending] = useState(false);
@@ -19,8 +41,35 @@ export default function ReporteVentasPage() {
   const datesValid = !!from && !!to && from <= to;
   const dateError = from && to && from > to ? 'La fecha de inicio no puede ser mayor que la de fin.' : null;
 
-  function handleDownload() {
-    window.open(salesApi.reportDownloadUrl(from, to), '_blank');
+  // Resetea el PDF cacheado cuando cambian las fechas
+  useEffect(() => { setPdf(null); setPdfError(null); }, [from, to]);
+
+  async function fetchPdf(): Promise<SalePdf | null> {
+    if (pdf) return pdf;
+    setLoadingPdf(true);
+    setPdfError(null);
+    try {
+      const res = await salesApi.report(from, to);
+      setPdf(res);
+      return res;
+    } catch (err) {
+      setPdfError(
+        err instanceof ApiError ? err.message : 'No se pudo generar el reporte.',
+      );
+      return null;
+    } finally {
+      setLoadingPdf(false);
+    }
+  }
+
+  async function handleDownload() {
+    const p = await fetchPdf();
+    if (p) triggerDownload(p);
+  }
+
+  async function handlePreview() {
+    setPreviewOpen(true);
+    await fetchPdf();
   }
 
   function openEmailModal() {
@@ -40,8 +89,11 @@ export default function ReporteVentasPage() {
     try {
       await salesApi.sendReportEmail(email.trim(), from, to);
       setSendResult({ ok: true, msg: 'Reporte enviado correctamente.' });
-    } catch {
-      setSendResult({ ok: false, msg: 'No se pudo enviar el reporte. Verifica que el backend esté activo.' });
+    } catch (err) {
+      setSendResult({
+        ok: false,
+        msg: err instanceof ApiError ? err.message : 'No se pudo enviar el reporte.',
+      });
     } finally {
       setSending(false);
     }
@@ -84,11 +136,11 @@ export default function ReporteVentasPage() {
           )}
 
           <div className="flex flex-wrap gap-3 pt-1">
-            <Button onClick={handleDownload} disabled={!datesValid}>
+            <Button onClick={handleDownload} disabled={!datesValid || loadingPdf}>
               <DownloadIcon className="size-4" />
-              Descargar
+              {loadingPdf ? 'Generando…' : 'Descargar'}
             </Button>
-            <Button variant="secondary" onClick={() => setPreviewOpen(true)} disabled={!datesValid}>
+            <Button variant="secondary" onClick={handlePreview} disabled={!datesValid || loadingPdf}>
               <EyeIcon className="size-4" />
               Generar correo
             </Button>
@@ -97,57 +149,24 @@ export default function ReporteVentasPage() {
               Enviar por correo
             </Button>
           </div>
+
+          {pdfError && !previewOpen && (
+            <p className="text-sm text-red-500 dark:text-red-400">{pdfError}</p>
+          )}
         </div>
       </Card>
 
       {/* Modal: vista previa del reporte */}
       {previewOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 p-4 backdrop-blur-sm"
-          onClick={(e) => { if (e.target === e.currentTarget) setPreviewOpen(false); }}
-        >
-          <div className="flex h-full max-h-[90vh] w-full max-w-4xl flex-col rounded-xl bg-white shadow-2xl dark:bg-slate-900">
-            {/* Cabecera */}
-            <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-800">
-              <div>
-                <h2 className="text-base font-semibold text-slate-900 dark:text-white">
-                  Vista previa del reporte
-                </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {from} → {to}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="secondary" onClick={handleDownload} className="text-xs px-3 py-1.5">
-                  <DownloadIcon className="size-3.5" />
-                  Descargar
-                </Button>
-                <Button
-                  onClick={() => { setPreviewOpen(false); openEmailModal(); }}
-                  className="text-xs px-3 py-1.5"
-                >
-                  <MailIcon className="size-3.5" />
-                  Enviar por correo
-                </Button>
-                <button
-                  type="button"
-                  onClick={() => setPreviewOpen(false)}
-                  aria-label="Cerrar vista previa"
-                  className="ml-1 inline-flex size-8 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
-                >
-                  <CloseIcon className="size-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* Iframe del PDF */}
-            <iframe
-              src={salesApi.reportDownloadUrl(from, to)}
-              className="min-h-0 flex-1 rounded-b-xl"
-              title="Vista previa del reporte de ventas"
-            />
-          </div>
-        </div>
+        <PreviewModal
+          pdf={pdf}
+          loading={loadingPdf}
+          error={pdfError}
+          dateRange={{ from, to }}
+          onDownload={() => pdf && triggerDownload(pdf)}
+          onEmail={() => { setPreviewOpen(false); openEmailModal(); }}
+          onClose={() => setPreviewOpen(false)}
+        />
       )}
 
       {/* Popup de correo */}
@@ -157,7 +176,6 @@ export default function ReporteVentasPage() {
           onClick={(e) => { if (e.target === e.currentTarget) closeEmailModal(); }}
         >
           <div className="w-full max-w-sm rounded-xl bg-white shadow-xl dark:bg-slate-900">
-            {/* Cabecera */}
             <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-800">
               <h2 className="text-base font-semibold text-slate-900 dark:text-white">
                 Enviar reporte por correo
@@ -172,8 +190,7 @@ export default function ReporteVentasPage() {
               </button>
             </div>
 
-            {/* Cuerpo */}
-            <div className="px-5 py-5 space-y-4">
+            <div className="space-y-4 px-5 py-5">
               <p className="text-sm text-slate-500 dark:text-slate-400">
                 Se enviará el reporte del{' '}
                 <span className="font-medium text-slate-700 dark:text-slate-200">{from}</span>
@@ -182,9 +199,7 @@ export default function ReporteVentasPage() {
               </p>
 
               <div>
-                <label className={labelClass} htmlFor="email-input">
-                  Correo electrónico
-                </label>
+                <label className={labelClass} htmlFor="email-input">Correo electrónico</label>
                 <input
                   id="email-input"
                   type="email"
@@ -199,27 +214,17 @@ export default function ReporteVentasPage() {
               </div>
 
               {sendResult && (
-                <p
-                  className={`text-sm ${
-                    sendResult.ok
-                      ? 'text-emerald-600 dark:text-emerald-400'
-                      : 'text-red-500 dark:text-red-400'
-                  }`}
-                >
+                <p className={`text-sm ${sendResult.ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}`}>
                   {sendResult.msg}
                 </p>
               )}
             </div>
 
-            {/* Pie */}
             <div className="flex justify-end gap-3 border-t border-slate-200 px-5 py-4 dark:border-slate-800">
               <Button variant="secondary" onClick={closeEmailModal} disabled={sending}>
                 Cancelar
               </Button>
-              <Button
-                onClick={handleSendEmail}
-                disabled={!email.trim() || sending}
-              >
+              <Button onClick={handleSendEmail} disabled={!email.trim() || sending}>
                 <MailIcon className="size-4" />
                 {sending ? 'Enviando…' : 'Enviar'}
               </Button>
@@ -228,5 +233,96 @@ export default function ReporteVentasPage() {
         </div>
       )}
     </>
+  );
+}
+
+function PreviewModal({
+  pdf,
+  loading,
+  error,
+  dateRange,
+  onDownload,
+  onEmail,
+  onClose,
+}: {
+  pdf: SalePdf | null;
+  loading: boolean;
+  error: string | null;
+  dateRange: { from: string; to: string };
+  onDownload: () => void;
+  onEmail: () => void;
+  onClose: () => void;
+}) {
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!pdf) return;
+    const url = URL.createObjectURL(base64ToBlob(pdf.base64, pdf.mimeType || 'application/pdf'));
+    setBlobUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [pdf]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Vista previa del reporte"
+        className="relative z-10 flex h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900"
+      >
+        {/* Cabecera */}
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-3 dark:border-slate-800">
+          <div>
+            <h2 className="text-base font-semibold text-slate-900 dark:text-white">
+              Vista previa del reporte
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              {dateRange.from} → {dateRange.to}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" onClick={onDownload} disabled={!pdf}>
+              <DownloadIcon className="size-4" />
+              Descargar
+            </Button>
+            <Button onClick={onEmail}>
+              <MailIcon className="size-4" />
+              Enviar por correo
+            </Button>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Cerrar"
+              className="ml-1 inline-flex size-8 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
+            >
+              <CloseIcon className="size-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Contenido */}
+        <div className="min-h-0 flex-1 bg-slate-100 dark:bg-slate-950">
+          {loading ? (
+            <div className="flex h-full flex-col items-center justify-center gap-3 text-slate-400">
+              <span className="size-8 animate-spin rounded-full border-2 border-slate-300 border-t-indigo-500 dark:border-slate-700 dark:border-t-indigo-400" />
+              <span className="text-sm">Generando PDF…</span>
+            </div>
+          ) : error ? (
+            <div className="flex h-full items-center justify-center px-6 text-center text-sm text-red-500">
+              {error}
+            </div>
+          ) : blobUrl ? (
+            <iframe src={blobUrl} title="Reporte de ventas" className="h-full w-full" />
+          ) : null}
+        </div>
+      </div>
+    </div>
   );
 }
