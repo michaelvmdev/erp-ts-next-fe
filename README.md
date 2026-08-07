@@ -1,25 +1,29 @@
-# crud-ts-next-fe
+# erp-ts-next-fe
 
-Frontend en Next.js para un sistema de ventas conectado al backend
-`crud-ts-nest-be`. La aplicacion cubre operaciones CRUD de catalogos,
-registro y busqueda de ventas, emision de comprobantes y analitica de ventas.
+Frontend en Next.js para el sistema ERP **AppSales** de **Michael Dev S.A.C.**,
+conectado al backend `crud-ts-nest-be`. La aplicacion cubre CRUD de catalogos,
+ventas, compras, proveedores y analitica con diagramas interactivos.
 
 ## Funcionalidades
 
-- Dashboard con indicadores del mes actual.
+- Dashboard con indicadores del mes (ventas, ingresos, compras, productos).
 - Registro de ventas con seleccion de cliente, tipo de comprobante, ubigeo y
   productos; con calculo automatico de IGV y total.
-- Busqueda de ventas por numero, tipo, cliente, fechas e importes, con
-  paginacion, ordenamiento y modal de detalle.
-- Acciones sobre comprobantes: vista previa del PDF en popup, descarga y
-  envio por correo (popup con campo de destinatario).
+- Busqueda de ventas por numero, tipo, cliente, fechas e importes con
+  paginacion configurable, ordenamiento y modal de detalle.
+- Acciones sobre comprobantes: vista previa del PDF, descarga y envio por correo.
+- CRUD de proveedores con validacion de RUC empresarial.
+- Registro de compras con seleccion de proveedor, productos y precio de costo.
+- Busqueda de compras por proveedor, fechas e importes con paginacion configurable.
 - CRUD completo de productos, marcas, categorias y clientes con paginacion,
   filtros, edicion en modal, toggle activo/inactivo y eliminacion con
-  alternativa de desactivacion cuando hay conflicto (HTTP 409).
-- Diagramas de ventas anuales (total por año, grafico de columnas).
-- Diagramas de ventas mensuales con Highcharts: ventas totales, ventas por
-  ubigeo (departamento / provincia / distrito), ventas por categoria y
-  producto lider por mes.
+  alternativa de desactivacion ante conflicto (HTTP 409).
+- Diagramas de ventas: anuales (columnas) y mensuales (linea) con filtros por
+  ubigeo y categoria; producto lider por mes.
+- Diagramas de compras: anuales (linea) y mensuales con filtros por categoria;
+  producto mas comprado por mes.
+- Boton de recarga en todos los diagramas.
+- Sidebar colapsable con grupos de navegacion expandibles/colapsables.
 - Proxy interno `/api/*` hacia el backend para evitar exponer la URL real en
   el navegador y simplificar CORS.
 - Soporte de tema claro/oscuro persistido por el sistema operativo.
@@ -79,12 +83,17 @@ npm run lint     # revision con ESLint
 | `/` | Dashboard con indicadores del mes. |
 | `/ventas/nueva` | Registrar una nueva venta. |
 | `/ventas/buscar` | Buscar ventas emitidas y abrir su detalle. |
+| `/compras/nueva` | Registrar una nueva compra. |
+| `/compras/buscar` | Buscar compras registradas y abrir su detalle. |
 | `/productos` | CRUD de productos. |
 | `/marcas` | CRUD de marcas. |
 | `/categorias` | CRUD de categorias. |
 | `/clientes` | CRUD de clientes. |
-| `/diagramas/anual` | Grafico de columnas: ventas totales por año. |
-| `/diagramas/mensual` | Graficos de linea mensuales por año, ubigeo y categoria. |
+| `/proveedores` | CRUD de proveedores. |
+| `/diagramas/anual` | Ventas totales por año (columnas). |
+| `/diagramas/mensual` | Ventas mensuales por año, ubigeo y categoria. |
+| `/diagramas/purchases/anual` | Compras totales por año (linea). |
+| `/diagramas/purchases/mensual` | Compras mensuales por año y categoria. |
 
 ## Estructura del proyecto
 
@@ -95,13 +104,20 @@ src/
     diagramas/
       anual/          Diagrama de ventas anuales
       mensual/        Diagramas de ventas mensuales
+      purchases/
+        anual/        Diagrama de compras anuales
+        mensual/      Diagramas de compras mensuales
     ventas/
       nueva/          Nueva venta
       buscar/         Busqueda de ventas
+    compras/
+      nueva/          Nueva compra
+      buscar/         Busqueda de compras
     productos/        CRUD de productos
     marcas/           CRUD de marcas
     categorias/       CRUD de categorias
     clientes/         CRUD de clientes
+    proveedores/      CRUD de proveedores
   components/         Componentes reutilizables (modales, UI, iconos)
   lib/
     api/              Cliente HTTP tipado por recurso
@@ -121,10 +137,14 @@ El proxy acepta cualquier metodo HTTP definido en el route handler y conserva
 la ruta original:
 
 ```text
-/api/brands                          -> BACKEND_API_URL/brands
-/api/products/query                  -> BACKEND_API_URL/products/query
-/api/sales                           -> BACKEND_API_URL/sales
-/api/sales/:id/pdf                   -> BACKEND_API_URL/sales/:id/pdf
-/api/dashboard/yearly-sales          -> BACKEND_API_URL/dashboard/yearly-sales
-/api/dashboard/monthly-sales         -> BACKEND_API_URL/dashboard/monthly-sales
+/api/brands                               -> BACKEND_API_URL/brands
+/api/products/query                       -> BACKEND_API_URL/products/query
+/api/sales                                -> BACKEND_API_URL/sales
+/api/sales/:id/pdf                        -> BACKEND_API_URL/sales/:id/pdf
+/api/purchases                            -> BACKEND_API_URL/purchases
+/api/suppliers                            -> BACKEND_API_URL/suppliers
+/api/dashboard/yearly-sales               -> BACKEND_API_URL/dashboard/yearly-sales
+/api/dashboard/monthly-sales              -> BACKEND_API_URL/dashboard/monthly-sales
+/api/dashboard/yearly-purchases           -> BACKEND_API_URL/dashboard/yearly-purchases
+/api/dashboard/monthly-purchases          -> BACKEND_API_URL/dashboard/monthly-purchases
 ```
