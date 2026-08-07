@@ -20,7 +20,7 @@ import {
 } from '@/components/icons';
 import { formatCurrency } from '@/lib/format';
 
-const LIMIT = 10;
+const PAGE_SIZES = [5, 10, 25, 50] as const;
 
 export default function BuscarComprasPage() {
   const [dateFrom, setDateFrom] = useState('');
@@ -38,6 +38,7 @@ export default function BuscarComprasPage() {
   const [sortBy, setSortBy] = useState<'date' | 'total'>('date');
   const [sortDir, setSortDir] = useState<SortDirection>('DESC');
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState<typeof PAGE_SIZES[number]>(10);
 
   const [supplierNames, setSupplierNames] = useState<Record<string, string>>({});
 
@@ -63,7 +64,7 @@ export default function BuscarComprasPage() {
           sortBy,
           sortDirection: sortDir,
           page,
-          limit: LIMIT,
+          limit,
         },
         c.signal,
       )
@@ -78,7 +79,7 @@ export default function BuscarComprasPage() {
         if (!c.signal.aborted) setLoading(false);
       });
     return () => c.abort();
-  }, [applied, supplier, sortBy, sortDir, page]);
+  }, [applied, supplier, sortBy, sortDir, page, limit]);
 
   // Resolver nombres de proveedor de los que falten
   useEffect(() => {
@@ -272,6 +273,17 @@ export default function BuscarComprasPage() {
                 <th className="px-4 py-3 text-right font-medium">Ver</th>
               </tr>
             </thead>
+            <tfoot className="border-t border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wider text-slate-400 dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-500">
+              <tr>
+                <th className="px-4 py-3 font-medium">Fecha</th>
+                <th className="px-4 py-3 font-medium">Proveedor</th>
+                <th className="px-4 py-3 text-center font-medium">Ítems</th>
+                <th className="px-4 py-3 text-right font-medium">Subtotal</th>
+                <th className="px-4 py-3 text-right font-medium">IGV</th>
+                <th className="px-4 py-3 text-right font-medium">Total</th>
+                <th className="px-4 py-3 text-right font-medium">Ver</th>
+              </tr>
+            </tfoot>
             <tbody>
               {loading && (
                 <tr>
@@ -338,7 +350,17 @@ export default function BuscarComprasPage() {
         </div>
 
         {/* Paginación */}
-        <div className="flex items-center justify-between border-t border-slate-200 px-4 py-3 dark:border-slate-800">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-4 py-3 dark:border-slate-800">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-500 dark:text-slate-400">Por página:</span>
+            <select
+              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+              value={limit}
+              onChange={(e) => { setLimit(Number(e.target.value) as typeof PAGE_SIZES[number]); setPage(1); }}
+            >
+              {PAGE_SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             {meta
               ? `Página ${meta.page} de ${Math.max(1, meta.totalPages)} · ${meta.total} compra${meta.total === 1 ? '' : 's'}`

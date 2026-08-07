@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type Highcharts from 'highcharts';
 import { LineChart } from '@/components/line-chart';
 import { Card, PageHeader } from '@/components/ui';
+import { RefreshIcon } from '@/components/icons';
 import { useIsDark } from '@/lib/use-theme';
 import { formatCurrency } from '@/lib/format';
 import { api, type YearlySalesPoint } from '@/lib/api';
@@ -121,6 +122,7 @@ export default function DiagramasAnualPage() {
   const [data, setData] = useState<YearlySalesPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refresh, setRefresh] = useState(0);
 
   useEffect(() => {
     const c = new AbortController();
@@ -138,7 +140,7 @@ export default function DiagramasAnualPage() {
         if (!c.signal.aborted) setLoading(false);
       });
     return () => c.abort();
-  }, []);
+  }, [refresh]);
 
   const options = useMemo(() => buildOptions(isDark, data), [isDark, data]);
 
@@ -147,6 +149,18 @@ export default function DiagramasAnualPage() {
       <PageHeader
         title="Diagramas anuales"
         subtitle="Evolución del total de ventas año a año."
+        actions={
+          <button
+            type="button"
+            onClick={() => setRefresh((r) => r + 1)}
+            disabled={loading}
+            aria-label="Recargar"
+            title="Recargar"
+            className="inline-flex size-9 items-center justify-center rounded-lg border border-slate-300 text-slate-600 transition hover:bg-slate-100 disabled:opacity-40 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+          >
+            <RefreshIcon className="size-4" />
+          </button>
+        }
       />
       <ChartFrame loading={loading} error={error}>
         <LineChart options={options} />

@@ -6,6 +6,7 @@ import { LineChart } from '@/components/line-chart';
 import { Card, inputClass, labelClass, PageHeader } from '@/components/ui';
 import { useIsDark } from '@/lib/use-theme';
 import { formatCurrency } from '@/lib/format';
+import { RefreshIcon } from '@/components/icons';
 import {
   api,
   type Category,
@@ -203,7 +204,7 @@ function ChartFrame({
 
 // --- 1) Ventas mensuales -----------------------------------------------------
 
-function MonthlySalesChart({ year, isDark }: { year: number; isDark: boolean }) {
+function MonthlySalesChart({ year, isDark, refresh }: { year: number; isDark: boolean; refresh: number }) {
   const [data, setData] = useState<MonthlySalesSeries | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -224,7 +225,7 @@ function MonthlySalesChart({ year, isDark }: { year: number; isDark: boolean }) 
         if (!c.signal.aborted) setLoading(false);
       });
     return () => c.abort();
-  }, [year]);
+  }, [year, refresh]);
 
   const options = useMemo(
     () => moneyOptions(isDark, '#6366f1', toTotals(data)),
@@ -244,7 +245,7 @@ function MonthlySalesChart({ year, isDark }: { year: number; isDark: boolean }) 
 
 // --- 2) Ventas por localidad (ubigeo) ---------------------------------------
 
-function SalesByUbigeoChart({ year, isDark }: { year: number; isDark: boolean }) {
+function SalesByUbigeoChart({ year, isDark, refresh }: { year: number; isDark: boolean; refresh: number }) {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [provinces, setProvinces] = useState<Province[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
@@ -310,7 +311,7 @@ function SalesByUbigeoChart({ year, isDark }: { year: number; isDark: boolean })
         if (!c.signal.aborted) setLoading(false);
       });
     return () => c.abort();
-  }, [year, departmentId, provinceId, districtId]);
+  }, [year, departmentId, provinceId, districtId, refresh]);
 
   const options = useMemo(
     () => moneyOptions(isDark, '#10b981', toTotals(data)),
@@ -386,9 +387,11 @@ function SalesByUbigeoChart({ year, isDark }: { year: number; isDark: boolean })
 function SalesByCategoryChart({
   year,
   isDark,
+  refresh,
 }: {
   year: number;
   isDark: boolean;
+  refresh: number;
 }) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoryId, setCategoryId] = useState('');
@@ -426,7 +429,7 @@ function SalesByCategoryChart({
         if (!c.signal.aborted) setLoading(false);
       });
     return () => c.abort();
-  }, [year, categoryId]);
+  }, [year, categoryId, refresh]);
 
   const options = useMemo(
     () => moneyOptions(isDark, '#8b5cf6', toTotals(data)),
@@ -460,7 +463,7 @@ function SalesByCategoryChart({
 
 // --- 4) Producto mas vendido por mes ----------------------------------------
 
-function TopProductChart({ year, isDark }: { year: number; isDark: boolean }) {
+function TopProductChart({ year, isDark, refresh }: { year: number; isDark: boolean; refresh: number }) {
   const [data, setData] = useState<TopProductByMonthSeries | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -481,7 +484,7 @@ function TopProductChart({ year, isDark }: { year: number; isDark: boolean }) {
         if (!c.signal.aborted) setLoading(false);
       });
     return () => c.abort();
-  }, [year]);
+  }, [year, refresh]);
 
   const options = useMemo(() => {
     const byMonth = new Map(data?.items.map((i) => [i.month, i]));
@@ -508,6 +511,7 @@ function TopProductChart({ year, isDark }: { year: number; isDark: boolean }) {
 export default function DiagramasPage() {
   const isDark = useIsDark();
   const [year, setYear] = useState(CURRENT_YEAR);
+  const [refresh, setRefresh] = useState(0);
 
   return (
     <>
@@ -515,32 +519,38 @@ export default function DiagramasPage() {
         title="Diagramas mensuales"
         subtitle="Desglose mensual de ventas por año."
         actions={
-          <div>
-            <label className={labelClass} htmlFor="year">
-              Año
-            </label>
-            <select
-              id="year"
-              className={`${inputClass} !w-auto`}
-              value={year}
-              onChange={(e) => setYear(Number(e.target.value))}
+          <div className="flex items-end gap-2">
+            <div>
+              <label className={labelClass} htmlFor="year">Año</label>
+              <select
+                id="year"
+                className={`${inputClass} !w-auto`}
+                value={year}
+                onChange={(e) => setYear(Number(e.target.value))}
+              >
+                {YEARS.map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </div>
+            <button
+              type="button"
+              onClick={() => setRefresh((r) => r + 1)}
+              aria-label="Recargar"
+              title="Recargar"
+              className="inline-flex size-9 items-center justify-center rounded-lg border border-slate-300 text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
             >
-              {YEARS.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
+              <RefreshIcon className="size-4" />
+            </button>
           </div>
         }
       />
 
-      {/* Cada diagrama ocupa una fila completa. */}
       <div className="grid grid-cols-1 gap-6">
-        <MonthlySalesChart year={year} isDark={isDark} />
-        <SalesByUbigeoChart year={year} isDark={isDark} />
-        <SalesByCategoryChart year={year} isDark={isDark} />
-        <TopProductChart year={year} isDark={isDark} />
+        <MonthlySalesChart year={year} isDark={isDark} refresh={refresh} />
+        <SalesByUbigeoChart year={year} isDark={isDark} refresh={refresh} />
+        <SalesByCategoryChart year={year} isDark={isDark} refresh={refresh} />
+        <TopProductChart year={year} isDark={isDark} refresh={refresh} />
       </div>
     </>
   );

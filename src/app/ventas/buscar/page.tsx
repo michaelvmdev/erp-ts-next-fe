@@ -22,7 +22,7 @@ import {
 import { formatCurrency } from '@/lib/format';
 import { cn } from '@/lib/cn';
 
-const LIMIT = 10;
+const PAGE_SIZES = [5, 10, 25, 50] as const;
 const NUMBER_RE = /^[A-Za-z]{3}-\d{10}$/;
 
 function saleTypeLabel(code: string, types: SaleType[]): string {
@@ -51,6 +51,7 @@ export default function BuscarVentasPage() {
   const [sortBy, setSortBy] = useState<'date' | 'number' | 'total'>('date');
   const [sortDir, setSortDir] = useState<SortDirection>('DESC');
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState<typeof PAGE_SIZES[number]>(10);
 
   // Catalogos y cache de nombres.
   const [saleTypes, setSaleTypes] = useState<SaleType[]>([]);
@@ -90,7 +91,7 @@ export default function BuscarVentasPage() {
           sortBy,
           sortDirection: sortDir,
           page,
-          limit: LIMIT,
+          limit,
         },
         c.signal,
       )
@@ -105,7 +106,7 @@ export default function BuscarVentasPage() {
         if (!c.signal.aborted) setLoading(false);
       });
     return () => c.abort();
-  }, [applied, saleTypeCode, client, sortBy, sortDir, page]);
+  }, [applied, saleTypeCode, client, sortBy, sortDir, page, limit]);
 
   // Resolver nombres de cliente de la pagina actual (los que falten).
   useEffect(() => {
@@ -346,6 +347,17 @@ export default function BuscarVentasPage() {
                 <th className="px-4 py-3 text-right font-medium">Ver</th>
               </tr>
             </thead>
+            <tfoot className="border-t border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wider text-slate-400 dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-500">
+              <tr>
+                <th className="px-4 py-3 font-medium">N°</th>
+                <th className="px-4 py-3 font-medium">Tipo</th>
+                <th className="px-4 py-3 font-medium">Fecha</th>
+                <th className="px-4 py-3 font-medium">Cliente</th>
+                <th className="px-4 py-3 text-center font-medium">Items</th>
+                <th className="px-4 py-3 text-right font-medium">Total</th>
+                <th className="px-4 py-3 text-right font-medium">Ver</th>
+              </tr>
+            </tfoot>
             <tbody>
               {loading && (
                 <tr>
@@ -414,7 +426,17 @@ export default function BuscarVentasPage() {
         </div>
 
         {/* Paginacion */}
-        <div className="flex items-center justify-between border-t border-slate-200 px-4 py-3 dark:border-slate-800">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-4 py-3 dark:border-slate-800">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-500 dark:text-slate-400">Por página:</span>
+            <select
+              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+              value={limit}
+              onChange={(e) => { setLimit(Number(e.target.value) as typeof PAGE_SIZES[number]); setPage(1); }}
+            >
+              {PAGE_SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             {meta
               ? `Pagina ${meta.page} de ${Math.max(1, meta.totalPages)} · ${meta.total} venta${meta.total === 1 ? '' : 's'}`

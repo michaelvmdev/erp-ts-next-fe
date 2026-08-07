@@ -78,7 +78,7 @@ const nav: NavEntry[] = [
     icon: ChartIcon,
     children: [
       {
-        label: 'Sales',
+        label: 'Ventas',
         icon: ChartIcon,
         children: [
           { label: 'Anual', href: '/diagramas/anual', icon: ChartIcon },
@@ -86,7 +86,7 @@ const nav: NavEntry[] = [
         ],
       },
       {
-        label: 'Purchases',
+        label: 'Compras',
         icon: ChartIcon,
         children: [
           { label: 'Anual', href: '/diagramas/purchases/anual', icon: ChartIcon },
