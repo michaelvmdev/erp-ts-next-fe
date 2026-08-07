@@ -63,6 +63,7 @@ const nav: NavEntry[] = [
       { label: 'Nueva venta', href: '/ventas/nueva', icon: PlusIcon },
       { label: 'Buscar', href: '/ventas/buscar', icon: SearchIcon },
       { label: 'Reporte', href: '/ventas/reporte', icon: DocumentTextIcon },
+      { label: 'Prods. vendidos', href: '/ventas/productos-vendidos', icon: DocumentTextIcon },
       { label: 'Clientes', href: '/clientes', icon: UserIcon },
     ],
   },

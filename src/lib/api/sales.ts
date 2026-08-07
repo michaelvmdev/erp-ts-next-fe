@@ -47,4 +47,16 @@ export const salesApi = {
       undefined,
       signal,
     ),
+
+  /** GET /sales/products-report?from=...&to=...&orderBy=amount|quantity */
+  productsReport: (from: string, to: string, orderBy: 'amount' | 'quantity', signal?: AbortSignal) =>
+    http.get<SalePdf>('/sales/products-report', { from, to, orderBy }, signal),
+
+  /** POST /sales/products-report/send-email?email=...&from=...&to=...&orderBy=... */
+  sendProductsReportEmail: (email: string, from: string, to: string, orderBy: 'amount' | 'quantity', signal?: AbortSignal) =>
+    http.post<{ message: string }>(
+      `/sales/products-report/send-email?${new URLSearchParams({ email, from, to, orderBy })}`,
+      undefined,
+      signal,
+    ),
 };
