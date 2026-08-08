@@ -453,6 +453,56 @@ export interface MonthlySalesByUbigeoParams {
   districtId?: string;
 }
 
+// --- Listas de precio --------------------------------------------------------
+
+export interface PriceList {
+  priceListId: string;
+  priceListDescription: string;
+  validFrom?: string | null;
+  validTo?: string | null;
+  priceListActive: boolean;
+}
+
+export interface CreatePriceListRequest {
+  priceListDescription: string;
+  validFrom?: string | null;
+  validTo?: string | null;
+  priceListActive?: boolean;
+}
+
+export interface UpdatePriceListRequest {
+  priceListDescription?: string;
+  validFrom?: string | null;
+  validTo?: string | null;
+  priceListActive?: boolean;
+}
+
+export interface ListPriceListsQuery {
+  priceListDescription?: string;
+  priceListActive?: boolean;
+  sortDirection?: SortDirection;
+  page?: number;
+  limit?: number;
+}
+
+export interface PriceListItem {
+  priceListItemId: string;
+  priceListId: string;
+  productId: string;
+  productName: string;
+  catalogPrice: number;
+  customPrice: number;
+}
+
+export interface PriceListItemInput {
+  productId: string;
+  customPrice: number;
+}
+
+export interface UpdatePriceListItemsRequest {
+  items: PriceListItemInput[];
+}
+
 // --- Almacenes ---------------------------------------------------------------
 
 export interface Warehouse {

@@ -131,6 +131,7 @@ const nav: NavEntry[] = [
     children: [
       { label: 'Unidades de medida', href: '/admin/units', icon: SettingsIcon },
       { label: 'Almacenes', href: '/admin/warehouses', icon: BoxIcon },
+      { label: 'Listas de precio', href: '/admin/price-lists', icon: TagIcon },
     ],
   },
 ];
