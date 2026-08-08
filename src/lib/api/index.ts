@@ -24,6 +24,11 @@ import { purchasesApi } from './purchases';
 import { unitsApi } from './units';
 import { warehousesApi } from './warehouses';
 import { priceListsApi } from './price-lists';
+import { inventoryApi } from './inventory';
+import { creditNotesApi } from './credit-notes';
+import { purchaseOrdersApi } from './purchase-orders';
+import { paymentsApi } from './payments';
+import { authApi, usersApi, rolesApi } from './auth';
 
 export {
   brandsApi,
@@ -41,6 +46,13 @@ export {
   unitsApi,
   warehousesApi,
   priceListsApi,
+  inventoryApi,
+  creditNotesApi,
+  purchaseOrdersApi,
+  paymentsApi,
+  authApi,
+  usersApi,
+  rolesApi,
 };
 
 /** Cliente agrupado por dominio, espejo de los recursos del backend. */
@@ -60,4 +72,11 @@ export const api = {
   units: unitsApi,
   warehouses: warehousesApi,
   priceLists: priceListsApi,
+  inventory: inventoryApi,
+  creditNotes: creditNotesApi,
+  purchaseOrders: purchaseOrdersApi,
+  payments: paymentsApi,
+  auth: authApi,
+  users: usersApi,
+  roles: rolesApi,
 };

@@ -612,6 +612,213 @@ export interface ListUnitsQuery {
   limit?: number;
 }
 
+// --- Notas de crédito --------------------------------------------------------
+
+export interface CreditNoteLine {
+  item: number;
+  productId: string;
+  quantity: number;
+  unitPrice: number;
+  partial: number;
+}
+
+export interface CreditNoteSummary {
+  id: string;
+  saleId: string;
+  number: string;
+  date: string;
+  hour: string;
+  reason: string;
+  subTotal: number;
+  igv: number;
+  total: number;
+  lineCount: number;
+}
+
+export interface CreditNoteDetail {
+  id: string;
+  saleId: string;
+  number: string;
+  date: string;
+  hour: string;
+  reason: string;
+  subTotal: number;
+  igv: number;
+  total: number;
+  lines: CreditNoteLine[];
+}
+
+export interface CreateCreditNoteDetailItem {
+  productId: string;
+  quantity: number;
+}
+
+export interface CreateCreditNoteRequest {
+  saleId: string;
+  reason: string;
+  creditNoteDate?: string;
+  creditNoteHour?: string;
+  creditNoteDetails: CreateCreditNoteDetailItem[];
+}
+
+export interface ListCreditNotesQuery {
+  saleId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  page?: number;
+  limit?: number;
+}
+
+// --- Órdenes de compra -------------------------------------------------------
+
+export type PurchaseOrderStatus = 'pending' | 'partial' | 'received' | 'cancelled';
+
+export interface PurchaseOrderLine {
+  item: number;
+  productId: string;
+  quantityOrdered: number;
+  quantityReceived: number;
+  unitPrice: number;
+  partial: number;
+}
+
+export interface PurchaseOrderSummary {
+  id: string;
+  supplierId: string;
+  date: string;
+  status: PurchaseOrderStatus;
+  notes: string | null;
+  subTotal: number;
+  igv: number;
+  total: number;
+  lineCount: number;
+}
+
+export interface PurchaseOrderDetail {
+  id: string;
+  supplierId: string;
+  date: string;
+  status: PurchaseOrderStatus;
+  notes: string | null;
+  subTotal: number;
+  igv: number;
+  total: number;
+  lines: PurchaseOrderLine[];
+}
+
+export interface CreatePurchaseOrderLineRequest {
+  productId: string;
+  quantityOrdered: number;
+  unitPrice: number;
+}
+
+export interface CreatePurchaseOrderRequest {
+  supplierId: string;
+  date: string;
+  notes?: string;
+  lines: CreatePurchaseOrderLineRequest[];
+}
+
+export interface UpdatePurchaseOrderRequest {
+  status?: PurchaseOrderStatus;
+  notes?: string | null;
+}
+
+export interface ListPurchaseOrdersQuery {
+  supplierId?: string;
+  status?: PurchaseOrderStatus;
+  dateFrom?: string;
+  dateTo?: string;
+  page?: number;
+  limit?: number;
+}
+
+// --- Pagos -------------------------------------------------------------------
+
+export type PaymentReferenceType = 'sale' | 'purchase' | 'credit_note' | 'purchase_order';
+export type PaymentMethod = 'cash' | 'transfer' | 'card' | 'check';
+export type PaymentType = 'income' | 'expense';
+
+export interface PaymentItem {
+  id: string;
+  paymentType: PaymentType;
+  referenceType: PaymentReferenceType;
+  referenceId: string;
+  paymentDate: string;
+  amount: number;
+  paymentMethod: PaymentMethod;
+  notes: string | null;
+  createdAt: string;
+}
+
+export interface CreatePaymentRequest {
+  paymentType: PaymentType;
+  referenceType: PaymentReferenceType;
+  referenceId: string;
+  paymentDate: string;
+  amount: number;
+  paymentMethod?: PaymentMethod;
+  notes?: string;
+}
+
+export interface ListPaymentsQuery {
+  referenceType?: PaymentReferenceType;
+  referenceId?: string;
+  paymentType?: PaymentType;
+  paymentMethod?: PaymentMethod;
+  dateFrom?: string;
+  dateTo?: string;
+  page?: number;
+  limit?: number;
+}
+
+// --- Auth / Usuarios / Roles -------------------------------------------------
+
+export interface AuthTokenResponse {
+  accessToken: string;
+  userId: string;
+  email: string;
+  roleId: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  roleId: string;
+  email: string;
+  name: string;
+  password: string;
+}
+
+export interface UserItem {
+  id: string;
+  roleId: string;
+  email: string;
+  name: string;
+  active: boolean;
+  createdAt: string;
+}
+
+export interface UpdateUserRequest {
+  name?: string;
+  roleId?: string;
+  active?: boolean;
+}
+
+export interface ListUsersQuery {
+  page?: number;
+  limit?: number;
+}
+
+export interface RoleItem {
+  id: string;
+  name: string;
+  description: string | null;
+}
+
 // --- Salud -------------------------------------------------------------------
 
 export interface HealthStatus {
