@@ -10,6 +10,7 @@ import {
 } from '@/lib/api';
 import { Button, inputClass, labelClass } from './ui';
 import { CloseIcon } from './icons';
+import { cn } from '@/lib/cn';
 
 interface ProductFormModalProps {
   /** null = crear; un producto = editar. */
@@ -42,6 +43,17 @@ export function ProductFormModal({
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [stock, setStock] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!product) return;
+    const c = new AbortController();
+    api.products
+      .get(product.productId, c.signal)
+      .then((p) => { if (!c.signal.aborted) setStock(p.stockQuantity ?? null); })
+      .catch(() => {});
+    return () => c.abort();
+  }, [product?.productId]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -106,9 +118,23 @@ export function ProductFormModal({
         className="relative z-10 w-full max-w-lg rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900"
       >
         <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-800">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-white">
-            {editing ? 'Editar producto' : 'Nuevo producto'}
-          </h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-base font-semibold text-slate-900 dark:text-white">
+              {editing ? 'Editar producto' : 'Nuevo producto'}
+            </h2>
+            {editing && stock !== null && (
+              <span
+                className={cn(
+                  'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
+                  stock === 0
+                    ? 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400'
+                    : 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400',
+                )}
+              >
+                Stock: {stock}
+              </span>
+            )}
+          </div>
           <button
             type="button"
             onClick={onClose}
