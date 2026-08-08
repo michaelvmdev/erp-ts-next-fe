@@ -1,14 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useAuth } from '@/contexts/auth';
 import { Button, inputClass, labelClass } from '@/components/ui';
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, user, loading } = useAuth();
   const router = useRouter();
+
+  // Already authenticated → go to app
+  useEffect(() => {
+    if (!loading && user) router.replace('/');
+  }, [loading, user, router]);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

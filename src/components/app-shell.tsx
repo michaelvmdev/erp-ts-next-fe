@@ -2,8 +2,8 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useEffect, useState, type ComponentType } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useRef, useState, type ComponentType } from 'react';
 import { cn } from '@/lib/cn';
 import { useAuth } from '@/contexts/auth';
 import { ThemeToggle } from './theme-toggle';
@@ -397,10 +397,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const close = () => setMobileOpen(false);
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const router = useRouter();
+  const { user, logout, loading } = useAuth();
+  const redirectedRef = useRef(false);
 
-  // Login page renders without the shell
+  useEffect(() => {
+    if (loading || pathname === '/login') return;
+    if (!user && !redirectedRef.current) {
+      redirectedRef.current = true;
+      router.replace('/login');
+    }
+  }, [loading, user, pathname, router]);
+
+  // Login page: bypass shell entirely
   if (pathname === '/login') return <>{children}</>;
+
+  // Verifying token or redirecting to login — show a centered spinner
+  if (loading || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <div className="size-9 animate-spin rounded-full border-4 border-slate-200 border-t-blue-500 dark:border-zinc-800 dark:border-t-blue-400" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100 lg:flex">
