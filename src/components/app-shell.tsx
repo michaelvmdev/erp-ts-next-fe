@@ -84,6 +84,7 @@ const nav: NavEntry[] = [
       { label: 'Nueva compra', href: '/compras/nueva', icon: PlusIcon },
       { label: 'Buscar', href: '/compras/buscar', icon: SearchIcon },
       { label: 'Proveedores', href: '/proveedores', icon: TruckIcon },
+      { label: 'Órdenes de compra', href: '/purchase-orders', icon: DocumentTextIcon },
     ],
   },
   {
