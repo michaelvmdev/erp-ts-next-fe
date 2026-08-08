@@ -17,13 +17,13 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim() || !password) return;
-    setLoading(true);
+    setSubmitting(true);
     setError(null);
     try {
       const res = await api.auth.login({ email: email.trim(), password });
@@ -40,7 +40,7 @@ export default function LoginPage() {
         setError('No se pudo iniciar sesión. Intenta de nuevo.');
       }
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   }
 
@@ -95,8 +95,8 @@ export default function LoginPage() {
               </p>
             )}
 
-            <Button type="submit" className="w-full justify-center" disabled={!email || !password || loading}>
-              {loading ? 'Ingresando…' : 'Ingresar'}
+            <Button type="submit" className="w-full justify-center" disabled={!email || !password || submitting}>
+              {submitting ? 'Ingresando…' : 'Ingresar'}
             </Button>
           </form>
         </div>
