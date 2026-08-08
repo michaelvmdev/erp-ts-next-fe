@@ -130,6 +130,7 @@ const nav: NavEntry[] = [
     icon: SettingsIcon,
     children: [
       { label: 'Unidades de medida', href: '/admin/units', icon: SettingsIcon },
+      { label: 'Almacenes', href: '/admin/warehouses', icon: BoxIcon },
     ],
   },
 ];

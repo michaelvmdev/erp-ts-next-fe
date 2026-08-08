@@ -453,6 +453,36 @@ export interface MonthlySalesByUbigeoParams {
   districtId?: string;
 }
 
+// --- Almacenes ---------------------------------------------------------------
+
+export interface Warehouse {
+  warehouseId: string;
+  warehouseCode: string;
+  warehouseDescription: string;
+  warehouseActive: boolean;
+}
+
+export interface CreateWarehouseRequest {
+  warehouseCode: string;
+  warehouseDescription: string;
+  warehouseActive?: boolean;
+}
+
+export interface UpdateWarehouseRequest {
+  warehouseCode?: string;
+  warehouseDescription?: string;
+  warehouseActive?: boolean;
+}
+
+export interface ListWarehousesQuery {
+  warehouseCode?: string;
+  warehouseDescription?: string;
+  warehouseActive?: boolean;
+  sortDirection?: SortDirection;
+  page?: number;
+  limit?: number;
+}
+
 // --- Unidades de medida ------------------------------------------------------
 
 export interface Unit {
