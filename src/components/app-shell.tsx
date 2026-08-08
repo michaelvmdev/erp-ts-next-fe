@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, type ComponentType } from 'react';
 import { cn } from '@/lib/cn';
+import { useAuth } from '@/contexts/auth';
 import { ThemeToggle } from './theme-toggle';
 import {
   BoxIcon,
@@ -18,6 +19,7 @@ import {
   FolderIcon,
   MapPinIcon,
   MenuIcon,
+  PowerIcon,
   PlusIcon,
   ReceiptIcon,
   SearchIcon,
@@ -133,6 +135,7 @@ const nav: NavEntry[] = [
     label: 'Administración',
     icon: SettingsIcon,
     children: [
+      { label: 'Usuarios', href: '/admin/users', icon: UserIcon },
       { label: 'Unidades de medida', href: '/admin/units', icon: SettingsIcon },
       { label: 'Almacenes', href: '/admin/warehouses', icon: BoxIcon },
       { label: 'Listas de precio', href: '/admin/price-lists', icon: TagIcon },
@@ -317,10 +320,14 @@ function SidebarContent({
   onNavigate,
   onCollapse,
   onClose,
+  userName,
+  onLogout,
 }: {
   onNavigate: () => void;
   onCollapse?: () => void;
   onClose?: () => void;
+  userName?: string;
+  onLogout?: () => void;
 }) {
   return (
     <div className="flex h-full flex-col">
@@ -357,7 +364,23 @@ function SidebarContent({
       </nav>
 
       {/* Footer */}
-      <div className="shrink-0 border-t border-zinc-800 px-3 py-3">
+      <div className="shrink-0 border-t border-zinc-800 px-3 py-3 space-y-2">
+        {userName && (
+          <div className="flex items-center justify-between gap-2">
+            <span className="truncate text-[11px] text-zinc-400 font-medium">{userName}</span>
+            {onLogout && (
+              <button
+                type="button"
+                onClick={onLogout}
+                aria-label="Cerrar sesión"
+                title="Cerrar sesión"
+                className={sidebarIconBtn}
+              >
+                <PowerIcon className="size-4" />
+              </button>
+            )}
+          </div>
+        )}
         <div className="flex items-center justify-between gap-2">
           <span className="truncate text-[11px] text-zinc-600">Michael Dev S.A.C. · v0.1</span>
           <ThemeToggle className={sidebarIconBtn} />
@@ -373,6 +396,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const close = () => setMobileOpen(false);
+  const pathname = usePathname();
+  const { user, logout } = useAuth();
+
+  // Login page renders without the shell
+  if (pathname === '/login') return <>{children}</>;
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100 lg:flex">
@@ -380,7 +408,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {!sidebarCollapsed && (
         <aside className="hidden w-60 shrink-0 border-r border-zinc-800 bg-zinc-950 lg:block">
           <div className="sticky top-0 h-screen">
-            <SidebarContent onNavigate={close} onCollapse={() => setSidebarCollapsed(true)} />
+            <SidebarContent
+              onNavigate={close}
+              onCollapse={() => setSidebarCollapsed(true)}
+              userName={user?.name}
+              onLogout={logout}
+            />
           </div>
         </aside>
       )}
@@ -402,7 +435,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={close} />
           <div className="absolute inset-y-0 left-0 w-72 bg-zinc-950 shadow-2xl">
-            <SidebarContent onNavigate={close} onClose={close} />
+            <SidebarContent onNavigate={close} onClose={close} userName={user?.name} onLogout={logout} />
           </div>
         </div>
       )}

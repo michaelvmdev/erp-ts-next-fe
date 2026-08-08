@@ -57,20 +57,37 @@ interface RequestOptions {
   signal?: AbortSignal;
 }
 
+function getAuthHeaders(): Record<string, string> {
+  if (typeof window === 'undefined') return {};
+  const token = localStorage.getItem('accessToken');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 async function request<T>(
   method: string,
   path: string,
   { query, body, signal }: RequestOptions = {},
 ): Promise<T> {
   const hasBody = body !== undefined;
+  const authHeaders = getAuthHeaders();
 
   const response = await fetch(buildUrl(path, query), {
     method,
-    headers: hasBody ? { 'Content-Type': 'application/json' } : undefined,
+    headers: {
+      ...authHeaders,
+      ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
+    },
     body: hasBody ? JSON.stringify(body) : undefined,
     signal,
     cache: 'no-store',
   });
+
+  // 401 → clear token and redirect to login (only in browser, not during login itself)
+  if (response.status === 401 && typeof window !== 'undefined' && !path.includes('/auth/login')) {
+    localStorage.removeItem('accessToken');
+    window.location.href = '/login';
+    return undefined as T;
+  }
 
   // 204 No Content (p. ej. DELETE de productos): sin cuerpo que parsear.
   if (response.status === 204) return undefined as T;
