@@ -45,7 +45,7 @@ export default function CreditNoteDetailPage() {
       <PageHeader
         title={note.number}
         subtitle={`Venta de origen: ${note.saleId.slice(0, 8)}… · Emitida el ${fmtDate(note.date)} ${note.hour}`}
-        action={
+        actions={
           <Link href="/credit-notes">
             <Button variant="secondary"><ChevronLeftIcon className="size-4" /> Volver</Button>
           </Link>

@@ -56,7 +56,7 @@ export default function CreditNotesPage() {
       <PageHeader
         title="Notas de Crédito"
         subtitle="Correlativo NCA-XXXXXXXXXX. Corrección de ventas."
-        action={
+        actions={
           <Button onClick={() => setShowModal(true)}>
             <PlusIcon className="size-4" />
             Nueva nota

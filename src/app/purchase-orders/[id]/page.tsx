@@ -97,7 +97,7 @@ export default function PurchaseOrderDetailPage() {
       <PageHeader
         title={`Orden de compra · ${order.date}`}
         subtitle={`Proveedor: ${order.supplierId.slice(0, 8)}… · ${order.lines.length} línea${order.lines.length === 1 ? '' : 's'}`}
-        action={
+        actions={
           <Link href="/purchase-orders">
             <Button variant="secondary"><ChevronLeftIcon className="size-4" /> Volver</Button>
           </Link>

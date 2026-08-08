@@ -124,7 +124,7 @@ export default function PaymentsPage() {
       <PageHeader
         title="Pagos"
         subtitle="Registro polimórfico de ingresos y egresos por documento."
-        action={
+        actions={
           <Button onClick={() => setShowModal(true)}>
             <PlusIcon className="size-4" />
             Nuevo pago

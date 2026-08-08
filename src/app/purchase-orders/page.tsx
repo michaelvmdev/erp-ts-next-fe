@@ -72,7 +72,7 @@ export default function PurchaseOrdersPage() {
       <PageHeader
         title="Órdenes de Compra"
         subtitle="Gestión de pedidos a proveedores con máquina de estados."
-        action={
+        actions={
           <Button onClick={() => setShowModal(true)}>
             <PlusIcon className="size-4" />
             Nueva orden
