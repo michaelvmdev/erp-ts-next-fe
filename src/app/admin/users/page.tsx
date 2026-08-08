@@ -160,13 +160,13 @@ export default function UsersPage() {
   function handleSaved(updated: UserItem) {
     setData((prev) =>
       prev
-        ? { ...prev, data: prev.data.map((u) => (u.id === updated.id ? updated : u)) }
+        ? { ...prev, items: prev.items.map((u) => (u.id === updated.id ? updated : u)) }
         : prev,
     );
     setEditing(null);
   }
 
-  const totalPages = data ? Math.ceil(data.total / LIMIT) : 1;
+  const totalPages = data ? Math.ceil(data.meta.total / LIMIT) : 1;
 
   return (
     <>
@@ -196,7 +196,7 @@ export default function UsersPage() {
                       ))}
                     </tr>
                   ))
-                : data?.data.map((u) => (
+                : data?.items.map((u) => (
                     <tr
                       key={u.id}
                       className="border-b border-slate-100 dark:border-zinc-800/60 hover:bg-slate-50 dark:hover:bg-zinc-800/30 transition-colors"
@@ -238,7 +238,7 @@ export default function UsersPage() {
             </tbody>
           </table>
 
-          {!loading && data?.data.length === 0 && (
+          {!loading && data?.items.length === 0 && (
             <p className="py-10 text-center text-sm text-slate-400 dark:text-zinc-500">
               No hay usuarios registrados.
             </p>
@@ -249,7 +249,7 @@ export default function UsersPage() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between border-t border-slate-200 px-4 py-3 dark:border-zinc-800">
             <span className="text-xs text-slate-500 dark:text-zinc-400">
-              Página {page} de {totalPages} · {data?.total ?? 0} usuarios
+              Página {page} de {totalPages} · {data?.meta.total ?? 0} usuarios
             </span>
             <div className="flex gap-1">
               <button
