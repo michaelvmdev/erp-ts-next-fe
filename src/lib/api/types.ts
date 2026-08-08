@@ -115,6 +115,8 @@ export interface Product {
   productImage: string | null;
   productUnitPrice: number;
   productActive: boolean;
+  /** Solo presente al obtener un producto por ID. */
+  stockQuantity?: number;
 }
 
 export interface CreateProductRequest {
@@ -451,6 +453,53 @@ export interface MonthlySalesByUbigeoParams {
   departmentId: string;
   provinceId?: string;
   districtId?: string;
+}
+
+// --- Inventario / Stock ------------------------------------------------------
+
+export type StockMovementType = 'purchase_in' | 'sale_out' | 'return_in' | 'adjustment';
+
+export interface StockBalance {
+  productId: string;
+  productCode: string;
+  productName: string;
+  warehouseId: string;
+  warehouseCode: string;
+  warehouseDescription: string;
+  quantity: number;
+}
+
+export interface ListStockBalancesQuery {
+  warehouseId?: string;
+  productId?: string;
+  includeEmpty?: boolean;
+  page?: number;
+  limit?: number;
+}
+
+export interface StockMovement {
+  movementId: string;
+  productId: string;
+  productCode: string;
+  productName: string;
+  warehouseId: string;
+  warehouseCode: string;
+  movementType: StockMovementType;
+  quantity: number;
+  unitCost: number | null;
+  notes: string | null;
+  referenceId: string | null;
+  createdAt: string;
+}
+
+export interface ListStockMovementsQuery {
+  productId?: string;
+  warehouseId?: string;
+  movementType?: StockMovementType;
+  dateFrom?: string;
+  dateTo?: string;
+  page?: number;
+  limit?: number;
 }
 
 // --- Listas de precio --------------------------------------------------------
