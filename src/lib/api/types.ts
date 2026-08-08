@@ -453,6 +453,36 @@ export interface MonthlySalesByUbigeoParams {
   districtId?: string;
 }
 
+// --- Unidades de medida ------------------------------------------------------
+
+export interface Unit {
+  unitId: string;
+  unitCode: string;
+  unitDescription: string;
+  unitActive: boolean;
+}
+
+export interface CreateUnitRequest {
+  unitCode: string;
+  unitDescription: string;
+  unitActive?: boolean;
+}
+
+export interface UpdateUnitRequest {
+  unitCode?: string;
+  unitDescription?: string;
+  unitActive?: boolean;
+}
+
+export interface ListUnitsQuery {
+  unitCode?: string;
+  unitDescription?: string;
+  unitActive?: boolean;
+  sortDirection?: SortDirection;
+  page?: number;
+  limit?: number;
+}
+
 // --- Salud -------------------------------------------------------------------
 
 export interface HealthStatus {

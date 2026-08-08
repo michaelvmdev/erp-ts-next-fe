@@ -21,6 +21,7 @@ import {
   PlusIcon,
   ReceiptIcon,
   SearchIcon,
+  SettingsIcon,
   TagIcon,
   TruckIcon,
   UserIcon,
@@ -122,6 +123,13 @@ const nav: NavEntry[] = [
           { label: 'Mensual', href: '/diagramas/purchases/mensual', icon: ChartIcon },
         ],
       },
+    ],
+  },
+  {
+    label: 'Administración',
+    icon: SettingsIcon,
+    children: [
+      { label: 'Unidades de medida', href: '/admin/units', icon: SettingsIcon },
     ],
   },
 ];

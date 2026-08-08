@@ -21,6 +21,7 @@ import { categoriesApi } from './categories';
 import { dashboardApi } from './dashboard';
 import { suppliersApi } from './suppliers';
 import { purchasesApi } from './purchases';
+import { unitsApi } from './units';
 
 export {
   brandsApi,
@@ -35,6 +36,7 @@ export {
   dashboardApi,
   suppliersApi,
   purchasesApi,
+  unitsApi,
 };
 
 /** Cliente agrupado por dominio, espejo de los recursos del backend. */
@@ -51,4 +53,5 @@ export const api = {
   dashboard: dashboardApi,
   suppliers: suppliersApi,
   purchases: purchasesApi,
+  units: unitsApi,
 };
