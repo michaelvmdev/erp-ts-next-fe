@@ -128,6 +128,7 @@ const nav: NavEntry[] = [
       },
     ],
   },
+  { label: 'Pagos', href: '/payments', icon: ReceiptIcon },
   {
     label: 'Administración',
     icon: SettingsIcon,
