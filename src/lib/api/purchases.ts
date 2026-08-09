@@ -4,6 +4,7 @@ import type {
   Paginated,
   Purchase,
   PurchaseSummary,
+  SaleEmailResult,
   SalePdf,
   SearchPurchasesQuery,
   UpdatePurchaseRequest,
@@ -47,6 +48,32 @@ export const purchasesApi = {
   sendPurchasesBySupplierReportEmail: (email: string, supplierId: string, from: string, to: string, signal?: AbortSignal) =>
     http.post<{ message: string }>(
       `/purchases/purchases-by-supplier-report/send-email?${new URLSearchParams({ email, supplierId, from, to })}`,
+      undefined,
+      signal,
+    ),
+
+  // ── Excel ────────────────────────────────────────────────────────────────────
+
+  /** GET /purchases/suppliers-amount-report-excel?from=...&to=... */
+  suppliersAmountReportExcel: (from: string, to: string, signal?: AbortSignal) =>
+    http.get<SalePdf>('/purchases/suppliers-amount-report-excel', { from, to }, signal),
+
+  /** POST /purchases/suppliers-amount-report-excel/send-email?email=...&from=...&to=... */
+  sendSuppliersAmountReportExcelEmail: (email: string, from: string, to: string, signal?: AbortSignal) =>
+    http.post<SaleEmailResult>(
+      `/purchases/suppliers-amount-report-excel/send-email?${new URLSearchParams({ email, from, to })}`,
+      undefined,
+      signal,
+    ),
+
+  /** GET /purchases/purchases-by-supplier-report-excel?supplierId=UUID&from=...&to=... */
+  purchasesBySupplierReportExcel: (supplierId: string, from: string, to: string, signal?: AbortSignal) =>
+    http.get<SalePdf>('/purchases/purchases-by-supplier-report-excel', { supplierId, from, to }, signal),
+
+  /** POST /purchases/purchases-by-supplier-report-excel/send-email?email=...&supplierId=UUID&from=...&to=... */
+  sendPurchasesBySupplierReportExcelEmail: (email: string, supplierId: string, from: string, to: string, signal?: AbortSignal) =>
+    http.post<SaleEmailResult>(
+      `/purchases/purchases-by-supplier-report-excel/send-email?${new URLSearchParams({ email, supplierId, from, to })}`,
       undefined,
       signal,
     ),

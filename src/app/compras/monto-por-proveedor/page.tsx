@@ -39,10 +39,16 @@ export default function MontoProveedorPage() {
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
+  const [loadingExcel, setLoadingExcel] = useState(false);
+  const [excelError, setExcelError] = useState<string | null>(null);
+  const [excelEmailOpen, setExcelEmailOpen] = useState(false);
+  const [sendingExcel, setSendingExcel] = useState(false);
+  const [excelSendResult, setExcelSendResult] = useState<{ ok: boolean; msg: string } | null>(null);
+
   const datesValid = !!from && !!to && from <= to;
   const dateError = from && to && from > to ? 'La fecha de inicio no puede ser mayor que la de fin.' : null;
 
-  useEffect(() => { setPdf(null); setPdfError(null); }, [from, to]);
+  useEffect(() => { setPdf(null); setPdfError(null); setExcelError(null); }, [from, to]);
 
   async function fetchPdf(): Promise<SalePdf | null> {
     if (pdf) return pdf;
@@ -94,6 +100,46 @@ export default function MontoProveedorPage() {
       });
     } finally {
       setSending(false);
+    }
+  }
+
+  async function handleExcelDownload() {
+    if (!datesValid) return;
+    setLoadingExcel(true);
+    setExcelError(null);
+    try {
+      const res = await purchasesApi.suppliersAmountReportExcel(from, to);
+      const bytes = Uint8Array.from(atob(res.base64), c => c.charCodeAt(0));
+      const blob = new Blob([bytes], { type: res.mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = res.fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      setExcelError(err instanceof ApiError ? err.message : 'No se pudo generar el Excel.');
+    } finally {
+      setLoadingExcel(false);
+    }
+  }
+
+  async function handleExcelEmail() {
+    if (!email.trim() || !datesValid) return;
+    setSendingExcel(true);
+    setExcelSendResult(null);
+    try {
+      const res = await purchasesApi.sendSuppliersAmountReportExcelEmail(email.trim(), from, to);
+      setExcelSendResult({ ok: true, msg: `Excel enviado a ${res.to}.` });
+    } catch (err) {
+      setExcelSendResult({
+        ok: false,
+        msg: err instanceof ApiError ? err.message : 'No se pudo enviar el Excel.',
+      });
+    } finally {
+      setSendingExcel(false);
     }
   }
 
@@ -151,8 +197,84 @@ export default function MontoProveedorPage() {
           {pdfError && !previewOpen && (
             <p className="text-sm text-red-500 dark:text-red-400">{pdfError}</p>
           )}
+
+          <div className="border-t border-slate-200 pt-5 dark:border-slate-700">
+            <p className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-300">Excel</p>
+            <div className="flex flex-wrap gap-3">
+              <Button onClick={handleExcelDownload} disabled={!datesValid || loadingExcel}>
+                <DownloadIcon className="size-4" />
+                {loadingExcel ? 'Generando…' : 'Descargar Excel'}
+              </Button>
+              <Button variant="secondary" onClick={() => { setExcelSendResult(null); setExcelEmailOpen(true); }} disabled={!datesValid}>
+                <MailIcon className="size-4" />
+                Enviar Excel por correo
+              </Button>
+            </div>
+            {excelError && (
+              <p className="mt-2 text-sm text-red-500 dark:text-red-400">{excelError}</p>
+            )}
+          </div>
         </div>
       </Card>
+
+      {excelEmailOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm"
+          onClick={(e) => { if (e.target === e.currentTarget) { setExcelEmailOpen(false); setExcelSendResult(null); } }}
+        >
+          <div className="w-full max-w-sm rounded-xl bg-white shadow-xl dark:bg-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-800">
+              <h2 className="text-base font-semibold text-slate-900 dark:text-white">
+                Enviar Excel por correo
+              </h2>
+              <button
+                type="button"
+                onClick={() => { setExcelEmailOpen(false); setExcelSendResult(null); }}
+                aria-label="Cerrar"
+                className="inline-flex size-8 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
+              >
+                <CloseIcon className="size-4" />
+              </button>
+            </div>
+            <div className="space-y-4 px-5 py-5">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Excel del{' '}
+                <span className="font-medium text-slate-700 dark:text-slate-200">{from}</span>
+                {' '}al{' '}
+                <span className="font-medium text-slate-700 dark:text-slate-200">{to}</span>.
+              </p>
+              <div>
+                <label className={labelClass} htmlFor="mp-excel-email">Correo electrónico</label>
+                <input
+                  id="mp-excel-email"
+                  type="email"
+                  className={inputClass}
+                  placeholder="correo@ejemplo.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleExcelEmail(); }}
+                  autoFocus
+                  disabled={sendingExcel}
+                />
+              </div>
+              {excelSendResult && (
+                <p className={`text-sm ${excelSendResult.ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}`}>
+                  {excelSendResult.msg}
+                </p>
+              )}
+            </div>
+            <div className="flex justify-end gap-3 border-t border-slate-200 px-5 py-4 dark:border-slate-800">
+              <Button variant="secondary" onClick={() => { setExcelEmailOpen(false); setExcelSendResult(null); }} disabled={sendingExcel}>
+                Cancelar
+              </Button>
+              <Button onClick={handleExcelEmail} disabled={!email.trim() || sendingExcel}>
+                <MailIcon className="size-4" />
+                {sendingExcel ? 'Enviando…' : 'Enviar'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {previewOpen && (
         <PreviewModal

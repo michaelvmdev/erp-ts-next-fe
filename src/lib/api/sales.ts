@@ -83,4 +83,54 @@ export const salesApi = {
       undefined,
       signal,
     ),
+
+  // ── Excel ────────────────────────────────────────────────────────────────────
+
+  /** GET /sales/report-excel?from=...&to=... */
+  reportExcel: (from: string, to?: string, signal?: AbortSignal) =>
+    http.get<SalePdf>('/sales/report-excel', to ? { from, to } : { from }, signal),
+
+  /** POST /sales/report-excel/send-email?email=...&from=...&to=... */
+  sendReportExcelEmail: (email: string, from: string, to: string, signal?: AbortSignal) =>
+    http.post<SaleEmailResult>(
+      `/sales/report-excel/send-email?${new URLSearchParams({ email, from, to })}`,
+      undefined,
+      signal,
+    ),
+
+  /** GET /sales/products-report-excel?from=...&to=...&orderBy=... */
+  productsReportExcel: (from: string, to: string, orderBy: 'amount' | 'quantity', signal?: AbortSignal) =>
+    http.get<SalePdf>('/sales/products-report-excel', { from, to, orderBy }, signal),
+
+  /** POST /sales/products-report-excel/send-email?email=...&from=...&to=...&orderBy=... */
+  sendProductsReportExcelEmail: (email: string, from: string, to: string, orderBy: 'amount' | 'quantity', signal?: AbortSignal) =>
+    http.post<SaleEmailResult>(
+      `/sales/products-report-excel/send-email?${new URLSearchParams({ email, from, to, orderBy })}`,
+      undefined,
+      signal,
+    ),
+
+  /** GET /sales/clients-amount-report-excel?from=...&to=... */
+  clientsAmountReportExcel: (from: string, to: string, signal?: AbortSignal) =>
+    http.get<SalePdf>('/sales/clients-amount-report-excel', { from, to }, signal),
+
+  /** POST /sales/clients-amount-report-excel/send-email?email=...&from=...&to=... */
+  sendClientsAmountReportExcelEmail: (email: string, from: string, to: string, signal?: AbortSignal) =>
+    http.post<SaleEmailResult>(
+      `/sales/clients-amount-report-excel/send-email?${new URLSearchParams({ email, from, to })}`,
+      undefined,
+      signal,
+    ),
+
+  /** GET /sales/sales-by-client-report-excel?clientId=UUID&from=...&to=... */
+  salesByClientReportExcel: (clientId: string, from: string, to: string, signal?: AbortSignal) =>
+    http.get<SalePdf>('/sales/sales-by-client-report-excel', { clientId, from, to }, signal),
+
+  /** POST /sales/sales-by-client-report-excel/send-email?email=...&clientId=UUID&from=...&to=... */
+  sendSalesByClientReportExcelEmail: (email: string, clientId: string, from: string, to: string, signal?: AbortSignal) =>
+    http.post<SaleEmailResult>(
+      `/sales/sales-by-client-report-excel/send-email?${new URLSearchParams({ email, clientId, from, to })}`,
+      undefined,
+      signal,
+    ),
 };
