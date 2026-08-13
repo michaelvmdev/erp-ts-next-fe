@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { Card, PageHeader } from '@/components/ui';
-import { BoxIcon, ChartIcon, PlusIcon, SearchIcon } from '@/components/icons';
+import { BoxIcon, ChartIcon, PlusIcon, SearchIcon, StarIcon } from '@/components/icons';
 import { MonthIndicators } from '@/components/month-indicators';
+import { NpsIndicator } from '@/components/nps-indicator';
 import { currentMonthLabel } from '@/lib/format';
 
 /** Dashboard (home): indicadores del mes actual y accesos rapidos. */
@@ -38,6 +39,12 @@ const quickActions: QuickAction[] = [
     href: '/diagramas',
     icon: ChartIcon,
   },
+  {
+    label: 'NPS',
+    description: 'Satisfaccion del cliente',
+    href: '/nps/resultados',
+    icon: StarIcon,
+  },
 ];
 
 export default function DashboardPage() {
@@ -53,6 +60,11 @@ export default function DashboardPage() {
       {/* Indicadores del mes (datos reales del backend) */}
       <section aria-label="Indicadores del mes">
         <MonthIndicators />
+      </section>
+
+      {/* NPS Score */}
+      <section aria-label="NPS" className="mt-8">
+        <NpsIndicator />
       </section>
 
       {/* Accesos rapidos */}
