@@ -459,6 +459,16 @@ export interface MonthlySalesByUbigeoParams {
 
 export type StockMovementType = 'purchase_in' | 'sale_out' | 'return_in' | 'adjustment';
 
+export interface StockAlert {
+  productId: string;
+  productName: string;
+  warehouseId: string;
+  warehouseCode: string;
+  currentStock: number;
+  minimumStock: number;
+  deficit: number;
+}
+
 export interface StockBalance {
   productId: string;
   productCode: string;
@@ -541,6 +551,129 @@ export interface PriceListItem {
   productName: string;
   catalogPrice: number;
   customPrice: number;
+}
+
+// --- Rentabilidad -------------------------------------------------------------
+
+export interface ProfitabilityRow {
+  productId: string;
+  productName: string;
+  categoryId: string;
+  categoryName: string;
+  unitsSold: number;
+  totalRevenue: string;
+  avgCost: string | null;
+  totalCost: string | null;
+  marginPct: string | null;
+}
+
+export interface MonthComparison {
+  year: number;
+  month: number;
+  currentAmount: string;
+  currentCount: number;
+  prevAmount: string;
+  prevCount: number;
+  prevYearAmount: string;
+  prevYearCount: number;
+  momPct: string | null;
+  yoyPct: string | null;
+}
+
+// --- NPS (Net Promoter Score) -------------------------------------------------
+
+export interface NpsSurvey {
+  surveyId: string;
+  saleId: string;
+  score: number;
+  comment: string | null;
+  createdAt: string;
+}
+
+export interface NpsScore {
+  /** Porcentaje de promotores (score 9-10). Cadena decimal, ej. "33.33". */
+  promotersPct: string;
+  /** Porcentaje de pasivos (score 7-8). */
+  passivesPct: string;
+  /** Porcentaje de detractores (score 0-6). */
+  detractorsPct: string;
+  /** Puntaje NPS de -100 a +100, o null si no hay encuestas. */
+  score: string | null;
+}
+
+export interface CreateNpsSurveyRequest {
+  saleId: string;
+  /** Entero de 0 a 10. */
+  score: number;
+  comment?: string;
+}
+
+export type NpsCategory = 'promoter' | 'passive' | 'detractor';
+export type NpsSortBy = 'score' | 'createdAt';
+
+export interface ListNpsSurveysQuery {
+  saleId?: string;
+  category?: NpsCategory;
+  scoreMin?: number;
+  scoreMax?: number;
+  dateFrom?: string;
+  dateTo?: string;
+  sortBy?: NpsSortBy;
+  sortDirection?: SortDirection;
+  page?: number;
+  limit?: number;
+}
+
+export interface NpsScoreQuery {
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+export interface NpsCategoryAnalytics {
+  categoryId: string;
+  categoryName: string;
+  totalSurveys: number;
+  promoters: number;
+  passives: number;
+  detractors: number;
+  npsScore: number | null;
+}
+
+export interface NpsProductAnalytics {
+  productId: string;
+  productName: string;
+  categoryId: string;
+  categoryName: string;
+  totalSurveys: number;
+  promoters: number;
+  passives: number;
+  detractors: number;
+  npsScore: number | null;
+}
+
+export interface NpsAnalytics {
+  byCategory: NpsCategoryAnalytics[];
+  byProduct: NpsProductAnalytics[];
+  dateFrom: string | null;
+  dateTo: string | null;
+}
+
+export interface NpsAnalyticsQuery {
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+export interface NpsCampaignContact {
+  email: string;
+  firstName: string;
+  lastName: string;
+}
+
+export interface NpsCampaignResult {
+  segment: 'promoter' | 'passive' | 'detractor';
+  subject: string;
+  sentTo: number;
+  contacts: NpsCampaignContact[];
 }
 
 export interface PriceListItemInput {
@@ -817,6 +950,91 @@ export interface RoleItem {
   id: string;
   name: string;
   description: string | null;
+}
+
+// --- Usuarios ecommerce ------------------------------------------------------
+
+export interface UserEcommerce {
+  userEcommerceId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone: string | null;
+  userActive: boolean;
+  createdAt: string;
+}
+
+export interface CreateUserEcommerceRequest {
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone?: string | null;
+  active?: boolean;
+}
+
+export interface UpdateUserEcommerceRequest {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string | null;
+  active?: boolean;
+}
+
+export type UserEcommerceSortBy = 'email' | 'firstName' | 'lastName' | 'createdAt';
+
+export interface UserPurchaseHistoryItem {
+  saleId: string;
+  saleDate: string;
+  serie: string;
+  number: string;
+  total: string;
+  saleStatus: string;
+  npsScore: number | null;
+  npsCategory: 'promoter' | 'passive' | 'detractor' | null;
+}
+
+export interface ListUsersEcommerceQuery {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  active?: boolean;
+  sortBy?: UserEcommerceSortBy;
+  sortDirection?: SortDirection;
+  page?: number;
+  limit?: number;
+}
+
+// --- Auditoría ---------------------------------------------------------------
+
+export type AuditAction = 'CREATE' | 'UPDATE' | 'DELETE';
+
+export interface AuditEntry {
+  auditId: string;
+  entityType: string;
+  entityId: string;
+  action: AuditAction;
+  changedBy: string;
+  payload: unknown;
+  createdAt: string;
+}
+
+export interface AuditListQuery {
+  entityType?: string;
+  action?: AuditAction;
+  changedBy?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  page?: number;
+  limit?: number;
+}
+
+// --- Búsqueda global ---------------------------------------------------------
+
+export interface SearchResult {
+  type: 'product' | 'client' | 'supplier' | 'user_ecommerce';
+  id: string;
+  label: string;
+  detail: string;
 }
 
 // --- Salud -------------------------------------------------------------------

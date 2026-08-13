@@ -29,6 +29,11 @@ import { creditNotesApi } from './credit-notes';
 import { purchaseOrdersApi } from './purchase-orders';
 import { paymentsApi } from './payments';
 import { authApi, usersApi, rolesApi } from './auth';
+import { npsApi } from './nps';
+import { usersEcommerceApi } from './users-ecommerce';
+import { exportsApi } from './exports';
+import { searchApi } from './search';
+import { auditApi } from './audit';
 
 export {
   brandsApi,
@@ -53,6 +58,11 @@ export {
   authApi,
   usersApi,
   rolesApi,
+  npsApi,
+  usersEcommerceApi,
+  exportsApi,
+  searchApi,
+  auditApi,
 };
 
 /** Cliente agrupado por dominio, espejo de los recursos del backend. */
@@ -79,4 +89,9 @@ export const api = {
   auth: authApi,
   users: usersApi,
   roles: rolesApi,
+  nps: npsApi,
+  usersEcommerce: usersEcommerceApi,
+  exports: exportsApi,
+  search: searchApi,
+  audit: auditApi,
 };

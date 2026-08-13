@@ -10,6 +10,53 @@ proyecto sigue SemVer cuando aplique.
 
 ### Added
 
+- **Rentabilidad por producto/categoría** (`/diagramas/rentabilidad`): gráfico de columnas Highcharts con top 20 productos (ingresos vs. costo) y tabla completa con badge de margen. Filtros por rango de fechas y botón de exportación CSV.
+- **Exportación CSV** en las páginas de ventas, compras, productos y clientes: botón de descarga que genera el CSV directamente desde el backend.
+- **Alertas de stock** (`/inventario/alertas`): tabla de productos por debajo del stock mínimo, con codificación por severidad (rojo/naranja) según el déficit.
+- **Historial de compras por usuario ecommerce** (`/usuarios-ecommerce/[id]`): página de detalle con resumen (total compras, gasto total, ticket promedio) y tabla de ventas con estado y puntuación NPS. Botón de historial en la lista de usuarios.
+- **Campaña de email por segmento NPS** (`/nps/analytics`): botón "Campaña de email" que abre un modal para seleccionar segmento (promotor/pasivo/detractor) y asunto; muestra la lista de destinatarios tras confirmar.
+- **Búsqueda global** en la cabecera del shell: campo de búsqueda con atajo `Ctrl+K` que busca en tiempo real en productos, clientes, proveedores y usuarios ecommerce, y navega al detalle al seleccionar un resultado.
+- **Auditoría de cambios** (`/admin/audit`): tabla paginada del log de auditoría con filtros por entidad, acción, usuario y fechas; expande el payload JSON inline.
+
+- Analitica NPS por categoria y producto:
+  - `/nps/analytics` — dos graficos de columnas Highcharts con NPS por categoria y top 20 productos,
+    filtro por rango de fechas y tablas con conteos de promotores/pasivos/detractores.
+  - Metodo `npsApi.analytics` en `src/lib/api/nps.ts`.
+  - Tipos `NpsCategoryAnalytics`, `NpsProductAnalytics`, `NpsAnalytics` y `NpsAnalyticsQuery`
+    en `src/lib/api/types.ts`.
+  - Entrada "Analitica" en el grupo NPS del sidebar.
+
+- Modulo de usuarios ecommerce:
+  - `/usuarios-ecommerce` — CRUD completo con tabla paginada, filtros por email/nombre/apellido/estado,
+    ordenamiento configurable, modal de alta/edicion y confirmacion de baja con manejo de FK 409.
+  - Cliente `usersEcommerceApi` en `src/lib/api/users-ecommerce.ts` con `list`, `get`, `create`, `update` y `delete`.
+  - Tipos `UserEcommerce`, `CreateUserEcommerceRequest`, `UpdateUserEcommerceRequest` y
+    `ListUsersEcommerceQuery` en `src/lib/api/types.ts`.
+  - Entrada "Usuarios ecommerce" en el sidebar con icono `UserIcon`.
+
+- Modulo NPS completo:
+  - `/nps/resultados` — dashboard con score NPS global (−100 a +100), barras de
+    distribucion por categoria (promotores/pasivos/detractores) y tabla paginada
+    de encuestas con fecha, score, categoria y comentario.
+  - `/nps/nueva` — formulario para registrar una encuesta: selector de venta
+    via PickerModal, botonera de score 0–10 con codigo de colores por categoria
+    (rojo/amarillo/verde) y comentario opcional.
+  - `NpsIndicator` en el Dashboard: card compacta con el score y barras de
+    distribucion, enlazada a `/nps/resultados`.
+  - Cliente `npsApi` en `src/lib/api/nps.ts` con `score`, `list`, `get` y `create`.
+  - Tipos `NpsSurvey`, `NpsScore`, `CreateNpsSurveyRequest` y `ListNpsSurveysQuery`
+    en `src/lib/api/types.ts`.
+  - `StarIcon` nuevo en `src/components/icons.tsx` (outline Heroicons).
+  - Grupo "NPS" en el sidebar con enlaces a Resultados y Nueva encuesta.
+  - Acceso rapido "NPS" en el Dashboard.
+
+### Changed
+
+- Referencias a `crud-ts-nest-be` actualizadas a `erp-ts-nest-be` en README,
+  siguiendo el renombrado del backend.
+
+### Added (before NPS)
+
 - Reporte PDF de monto por proveedor en `/compras/monto-por-proveedor`:
   lista todos los proveedores del periodo con IGV y monto total de compras,
   con descarga, vista previa y envio por correo.

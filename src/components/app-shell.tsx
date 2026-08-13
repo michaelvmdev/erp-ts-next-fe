@@ -3,11 +3,13 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useRef, useState, type ComponentType } from 'react';
+import { useCallback, useEffect, useRef, useState, type ComponentType } from 'react';
 import { cn } from '@/lib/cn';
 import { useAuth } from '@/contexts/auth';
+import { api, type SearchResult } from '@/lib/api';
 import { ThemeToggle } from './theme-toggle';
 import {
+  BellIcon,
   BoxIcon,
   ChartIcon,
   ChevronDownIcon,
@@ -17,6 +19,7 @@ import {
   DashboardIcon,
   DocumentTextIcon,
   FolderIcon,
+  HistoryIcon,
   MapPinIcon,
   MenuIcon,
   PowerIcon,
@@ -24,6 +27,8 @@ import {
   ReceiptIcon,
   SearchIcon,
   SettingsIcon,
+  ShieldIcon,
+  StarIcon,
   TagIcon,
   TruckIcon,
   UserIcon,
@@ -77,6 +82,7 @@ const nav: NavEntry[] = [
       { label: 'Marcas', href: '/marcas', icon: TagIcon },
       { label: 'Categorías', href: '/categorias', icon: FolderIcon },
       { label: 'Inventario', href: '/inventory', icon: BoxIcon },
+      { label: 'Alertas de stock', href: '/inventario/alertas', icon: BellIcon },
     ],
   },
   {
@@ -128,9 +134,20 @@ const nav: NavEntry[] = [
           { label: 'Mensual', href: '/diagramas/purchases/mensual', icon: ChartIcon },
         ],
       },
+      { label: 'Rentabilidad', href: '/diagramas/rentabilidad', icon: ChartIcon },
     ],
   },
   { label: 'Pagos', href: '/payments', icon: ReceiptIcon },
+  {
+    label: 'NPS',
+    icon: StarIcon,
+    children: [
+      { label: 'Resultados', href: '/nps/resultados', icon: ChartIcon },
+      { label: 'Analítica', href: '/nps/analytics', icon: ChartIcon },
+      { label: 'Nueva encuesta', href: '/nps/nueva', icon: PlusIcon },
+    ],
+  },
+  { label: 'Usuarios ecommerce', href: '/usuarios-ecommerce', icon: UserIcon },
   {
     label: 'Administración',
     icon: SettingsIcon,
@@ -139,6 +156,7 @@ const nav: NavEntry[] = [
       { label: 'Unidades de medida', href: '/admin/units', icon: SettingsIcon },
       { label: 'Almacenes', href: '/admin/warehouses', icon: BoxIcon },
       { label: 'Listas de precio', href: '/admin/price-lists', icon: TagIcon },
+      { label: 'Auditoría', href: '/admin/audit', icon: ShieldIcon },
     ],
   },
 ];
@@ -390,6 +408,142 @@ function SidebarContent({
   );
 }
 
+// ─── Búsqueda global ──────────────────────────────────────────────────────────
+
+const RESULT_TYPE_LABEL: Record<SearchResult['type'], string> = {
+  product: 'Producto',
+  client: 'Cliente',
+  supplier: 'Proveedor',
+  user_ecommerce: 'Usuario e-com.',
+};
+
+const RESULT_TYPE_HREF: Record<SearchResult['type'], (id: string) => string> = {
+  product: () => '/productos',
+  client: () => '/clientes',
+  supplier: () => '/proveedores',
+  user_ecommerce: (id) => `/usuarios-ecommerce/${id}`,
+};
+
+function GlobalSearch() {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState('');
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (open) setTimeout(() => inputRef.current?.focus(), 50);
+    else { setQ(''); setResults([]); }
+  }, [open]);
+
+  const runSearch = useCallback((term: string) => {
+    if (term.length < 2) { setResults([]); return; }
+    const c = new AbortController();
+    setSearching(true);
+    api.search.search(term, c.signal)
+      .then((r) => setResults(r))
+      .catch(() => {})
+      .finally(() => setSearching(false));
+    return () => c.abort();
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => runSearch(q), 300);
+    return () => clearTimeout(timer);
+  }, [q, runSearch]);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setOpen((v) => !v); }
+      if (e.key === 'Escape') setOpen(false);
+    }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
+
+  function handleSelect(r: SearchResult) {
+    router.push(RESULT_TYPE_HREF[r.type](r.id));
+    setOpen(false);
+  }
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        aria-label="Búsqueda global"
+        title="Búsqueda global (Ctrl+K)"
+        className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-500 transition hover:border-slate-300 hover:bg-white dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+      >
+        <SearchIcon className="size-4" />
+        <span className="hidden sm:inline">Buscar…</span>
+        <kbd className="hidden rounded bg-slate-200 px-1 text-xs text-slate-400 dark:bg-zinc-700 dark:text-zinc-500 sm:inline">
+          Ctrl+K
+        </kbd>
+      </button>
+
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-[10vh]">
+          <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setOpen(false)} />
+          <div className="relative z-10 w-full max-w-xl rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+              <SearchIcon className="size-5 shrink-0 text-slate-400" />
+              <input
+                ref={inputRef}
+                type="text"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Buscar productos, clientes, proveedores…"
+                className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 placeholder-slate-400 outline-none dark:text-white"
+              />
+              {searching && (
+                <div className="size-4 shrink-0 animate-spin rounded-full border-2 border-slate-200 border-t-blue-500" />
+              )}
+            </div>
+
+            {results.length > 0 && (
+              <ul className="max-h-80 overflow-y-auto py-2">
+                {results.map((r) => (
+                  <li key={`${r.type}:${r.id}`}>
+                    <button
+                      onClick={() => handleSelect(r)}
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-slate-50 dark:hover:bg-slate-800"
+                    >
+                      <span className="shrink-0 rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-600 dark:bg-blue-950/50 dark:text-blue-400">
+                        {RESULT_TYPE_LABEL[r.type]}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium text-slate-900 dark:text-white">
+                          {r.label}
+                        </span>
+                        {r.detail && (
+                          <span className="block truncate text-xs text-slate-400">{r.detail}</span>
+                        )}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {q.length >= 2 && !searching && results.length === 0 && (
+              <p className="px-4 py-6 text-center text-sm text-slate-400">
+                Sin resultados para &ldquo;{q}&rdquo;
+              </p>
+            )}
+
+            {q.length < 2 && (
+              <p className="px-4 py-6 text-center text-sm text-slate-400">
+                Escribe al menos 2 caracteres para buscar
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 // ─── Shell principal ──────────────────────────────────────────────────────────
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -461,7 +615,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Cabecera */}
-        <header className="sticky top-0 z-30 flex h-14 items-center border-b border-slate-200 bg-white px-4 dark:border-zinc-800 dark:bg-slate-900 sm:px-6">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-slate-200 bg-white px-4 dark:border-zinc-800 dark:bg-slate-900 sm:px-6">
           {/* Logo visible solo en móvil */}
           <div className="flex items-center gap-2.5 lg:hidden">
             <Image src="/erp-mv-dev-logo.svg" alt="ERP MV-DEV" width={28} height={28} className="shrink-0 rounded-md" />
@@ -471,6 +625,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 MV<span className="text-blue-500">-DEV</span>
               </p>
             </div>
+          </div>
+          <div className="ml-auto">
+            <GlobalSearch />
           </div>
         </header>
 

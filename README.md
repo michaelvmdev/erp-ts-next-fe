@@ -7,6 +7,10 @@ reportes PDF.
 
 ## Funcionalidades
 
+- NPS: dashboard de satisfaccion del cliente con score global (−100 a +100),
+  barras de distribucion por categoria y formulario de encuestas vinculadas a ventas.
+  Endpoints: `GET /nps/score`, `GET /nps`, `POST /nps`.
+
 - Dashboard con indicadores mensuales: ventas, ingresos, comprobantes, compras.
 - Registro de ventas con seleccion de cliente, tipo de comprobante (boleta/factura
   segun RUC), ubigeo y productos; calculo automatico de IGV y total.
@@ -52,7 +56,7 @@ reportes PDF.
 
 - Node.js compatible con Next.js 16.
 - npm.
-- Backend `crud-ts-nest-be` ejecutandose y accesible por HTTP.
+- Backend `erp-ts-nest-be` ejecutandose y accesible por HTTP.
 
 ## Configuracion
 
@@ -107,6 +111,10 @@ npm run lint     # revision con ESLint
 | `/categorias` | CRUD de categorias. |
 | `/clientes` | CRUD de clientes. |
 | `/proveedores` | CRUD de proveedores. |
+| `/nps/resultados` | Score NPS global, distribucion de respuestas y tabla de encuestas con filtros. |
+| `/nps/analytics` | Analitica NPS por categoria y por producto (top 20) con graficos de columnas. |
+| `/nps/nueva` | Registrar una encuesta NPS vinculada a una venta. |
+| `/usuarios-ecommerce` | CRUD de usuarios ecommerce con filtros y modales de alta/edicion/baja. |
 | `/mapas/peru` | Mapa de ventas por departamento con filtros de fecha. |
 | `/diagramas/anual` | Ventas totales por año (columnas). |
 | `/diagramas/mensual` | Ventas mensuales por año, ubigeo y categoria. |
@@ -156,7 +164,7 @@ public/                     Assets estaticos (logo SVG, favicon)
 ## Contrato con el backend
 
 Los tipos del contrato viven en `src/lib/api/types.ts` y reflejan los DTOs del
-backend. Si cambia un endpoint o DTO en `crud-ts-nest-be`, actualiza primero ese
+backend. Si cambia un endpoint o DTO en `erp-ts-nest-be`, actualiza primero ese
 archivo y luego los clientes especificos en `src/lib/api/`.
 
 El proxy acepta cualquier metodo HTTP definido en el route handler y conserva
@@ -184,4 +192,10 @@ la ruta original:
 /api/ubigeo/departments                          -> BACKEND_API_URL/ubigeo/departments
 /api/ubigeo/provinces/:deptId                    -> BACKEND_API_URL/ubigeo/provinces/:deptId
 /api/ubigeo/districts/:provId                    -> BACKEND_API_URL/ubigeo/districts/:provId
+/api/nps/score                                   -> BACKEND_API_URL/nps/score
+/api/nps/analytics                               -> BACKEND_API_URL/nps/analytics
+/api/nps                                         -> BACKEND_API_URL/nps
+/api/nps/:surveyId                               -> BACKEND_API_URL/nps/:surveyId
+/api/users-ecommerce                             -> BACKEND_API_URL/users-ecommerce
+/api/users-ecommerce/:userEcommerceId            -> BACKEND_API_URL/users-ecommerce/:userEcommerceId
 ```
