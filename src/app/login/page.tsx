@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useAuth } from '@/contexts/auth';
@@ -99,6 +100,15 @@ export default function LoginPage() {
               {submitting ? 'Ingresando…' : 'Ingresar'}
             </Button>
           </form>
+
+          <div className="mt-4 text-center">
+            <Link
+              href="/recuperar-contrasena"
+              className="text-sm text-blue-600 hover:underline dark:text-blue-400"
+            >
+              Olvidé mi contraseña
+            </Link>
+          </div>
         </div>
       </div>
     </div>

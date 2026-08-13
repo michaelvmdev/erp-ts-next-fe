@@ -19,6 +19,12 @@ export const authApi = {
 
   me: (signal?: AbortSignal) =>
     http.get<UserItem>('/auth/me', undefined, signal),
+
+  forgotPassword: (email: string, signal?: AbortSignal) =>
+    http.post<void>('/auth/forgot-password', { email }, signal),
+
+  resetPassword: (token: string, newPassword: string, signal?: AbortSignal) =>
+    http.post<void>('/auth/reset-password', { token, newPassword }, signal),
 };
 
 export const usersApi = {
