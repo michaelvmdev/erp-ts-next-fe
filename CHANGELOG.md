@@ -6,7 +6,7 @@ El formato sigue una version simplificada de
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y el versionado del
 proyecto sigue SemVer cuando aplique.
 
-## [Unreleased]
+## [1.0.0] - 2026-08-13
 
 ### Added
 
