@@ -135,6 +135,7 @@ const nav: NavEntry[] = [
         ],
       },
       { label: 'Rentabilidad', href: '/diagramas/rentabilidad', icon: ChartIcon },
+      { label: 'Comparativa', href: '/diagramas/comparativa', icon: ChartIcon },
     ],
   },
   { label: 'Pagos', href: '/payments', icon: ReceiptIcon },
