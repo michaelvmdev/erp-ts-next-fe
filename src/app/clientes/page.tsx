@@ -14,6 +14,7 @@ import { ClientFormModal } from '@/components/client-form-modal';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
+  DownloadIcon,
   PencilIcon,
   PlusIcon,
   PowerIcon,
@@ -25,6 +26,7 @@ import { cn } from '@/lib/cn';
 const LIMIT = 10;
 
 export default function ClientesPage() {
+  const [downloading, setDownloading] = useState(false);
   // Filtros
   const [term, setTerm] = useState('');
   const [query, setQuery] = useState('');
@@ -138,15 +140,28 @@ export default function ClientesPage() {
         title="Clientes"
         subtitle="Padron de clientes y su documento."
         actions={
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setFormOpen(true);
-            }}
-          >
-            <PlusIcon className="size-4" />
-            Nuevo cliente
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              disabled={downloading}
+              onClick={async () => {
+                setDownloading(true);
+                try { await api.exports.clients(); }
+                finally { setDownloading(false); }
+              }}
+            >
+              <DownloadIcon className="size-4 mr-1" />
+              {downloading ? 'Exportando…' : 'CSV'}
+            </Button>
+            <Button
+              onClick={() => {
+                setEditing(null);
+                setFormOpen(true);
+              }}
+            >
+              <PlusIcon className="size-4" />
+              Nuevo cliente
+            </Button>
+          </div>
         }
       />
 

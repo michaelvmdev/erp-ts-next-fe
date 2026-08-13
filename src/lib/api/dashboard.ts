@@ -1,7 +1,9 @@
 import { http, type Query } from './http';
 import type {
+  MonthComparison,
   MonthlySalesByUbigeoParams,
   MonthlySalesSeries,
+  ProfitabilityRow,
   TopProductByMonthSeries,
   YearlySalesResponse,
 } from './types';
@@ -74,4 +76,19 @@ export const dashboardApi = {
   /** GET /dashboard/yearly-purchases */
   yearlyPurchases: (signal?: AbortSignal) =>
     http.get<YearlySalesResponse>('/dashboard/yearly-purchases', undefined, signal),
+
+  /** GET /dashboard/profitability?dateFrom&dateTo */
+  profitability: (
+    params?: { dateFrom?: string; dateTo?: string },
+    signal?: AbortSignal,
+  ) =>
+    http.get<ProfitabilityRow[]>(
+      '/dashboard/profitability',
+      params as unknown as Query,
+      signal,
+    ),
+
+  /** GET /dashboard/comparison?year&month */
+  comparison: (year: number, month: number, signal?: AbortSignal) =>
+    http.get<MonthComparison>('/dashboard/comparison', { year, month }, signal),
 };

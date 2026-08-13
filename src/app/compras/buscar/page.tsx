@@ -15,6 +15,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   CloseIcon,
+  DownloadIcon,
   EyeIcon,
   SearchIcon,
 } from '@/components/icons';
@@ -23,6 +24,7 @@ import { formatCurrency } from '@/lib/format';
 const PAGE_SIZES = [5, 10, 25, 50] as const;
 
 export default function BuscarComprasPage() {
+  const [downloading, setDownloading] = useState(false);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [totalMin, setTotalMin] = useState('');
@@ -133,6 +135,19 @@ export default function BuscarComprasPage() {
       <PageHeader
         title="Buscar compras"
         subtitle="Consulta y filtra las compras registradas."
+        actions={
+          <Button
+            disabled={downloading}
+            onClick={async () => {
+              setDownloading(true);
+              try { await api.exports.purchases({ dateFrom: applied.dateFrom || undefined, dateTo: applied.dateTo || undefined }); }
+              finally { setDownloading(false); }
+            }}
+          >
+            <DownloadIcon className="h-4 w-4 mr-1" />
+            {downloading ? 'Exportando…' : 'Exportar CSV'}
+          </Button>
+        }
       />
 
       {/* Filtros */}

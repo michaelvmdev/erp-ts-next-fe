@@ -101,6 +101,30 @@ async function request<T>(
   return data as T;
 }
 
+/** Descarga un endpoint que devuelve un archivo (CSV, PDF…) y dispara el guardado. */
+async function downloadFile(
+  path: string,
+  filename: string,
+  query?: Query,
+): Promise<void> {
+  const authHeaders = getAuthHeaders();
+  const response = await fetch(buildUrl(path, query), {
+    method: 'GET',
+    headers: { ...authHeaders },
+    cache: 'no-store',
+  });
+  if (!response.ok) throw new ApiError(response.status, null);
+  const blob = await response.blob();
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 export const http = {
   get: <T>(path: string, query?: Query, signal?: AbortSignal) =>
     request<T>('GET', path, { query, signal }),
@@ -112,4 +136,5 @@ export const http = {
     request<T>('PUT', path, { body, signal }),
   delete: <T = void>(path: string, signal?: AbortSignal) =>
     request<T>('DELETE', path, { signal }),
+  download: downloadFile,
 };

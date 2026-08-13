@@ -11,6 +11,7 @@ import {
   type SortDirection,
 } from '@/lib/api';
 import { Button, Card, inputClass, PageHeader } from '@/components/ui';
+import { DownloadIcon } from '@/components/icons';
 import { ProductFormModal } from '@/components/product-form-modal';
 import {
   ChevronLeftIcon,
@@ -27,6 +28,7 @@ import { cn } from '@/lib/cn';
 const LIMIT = 10;
 
 export default function ProductosPage() {
+  const [downloading, setDownloading] = useState(false);
   // Filtros
   const [term, setTerm] = useState('');
   const [query, setQuery] = useState('');
@@ -130,15 +132,28 @@ export default function ProductosPage() {
         title="Productos"
         subtitle="Catalogo, precios y disponibilidad."
         actions={
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setFormOpen(true);
-            }}
-          >
-            <PlusIcon className="size-4" />
-            Nuevo producto
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              disabled={downloading}
+              onClick={async () => {
+                setDownloading(true);
+                try { await api.exports.products(); }
+                finally { setDownloading(false); }
+              }}
+            >
+              <DownloadIcon className="size-4 mr-1" />
+              {downloading ? 'Exportando…' : 'CSV'}
+            </Button>
+            <Button
+              onClick={() => {
+                setEditing(null);
+                setFormOpen(true);
+              }}
+            >
+              <PlusIcon className="size-4" />
+              Nuevo producto
+            </Button>
+          </div>
         }
       />
 

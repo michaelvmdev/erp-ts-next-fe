@@ -9,6 +9,7 @@ import {
   type SaleType,
   type SortDirection,
 } from '@/lib/api';
+import { DownloadIcon } from '@/components/icons';
 import { Button, Card, inputClass, labelClass, PageHeader } from '@/components/ui';
 import { PickerModal } from '@/components/picker-modal';
 import { SaleDetailModal } from '@/components/sale-detail-modal';
@@ -31,6 +32,8 @@ function saleTypeLabel(code: string, types: SaleType[]): string {
 }
 
 export default function BuscarVentasPage() {
+  const [downloading, setDownloading] = useState(false);
+
   // Filtros "borrador" (se aplican con Buscar / Enter).
   const [saleNumber, setSaleNumber] = useState('');
   const [dateFrom, setDateFrom] = useState('');
@@ -163,6 +166,19 @@ export default function BuscarVentasPage() {
       <PageHeader
         title="Buscar ventas"
         subtitle="Consulta y filtra los comprobantes emitidos."
+        actions={
+          <Button
+            disabled={downloading}
+            onClick={async () => {
+              setDownloading(true);
+              try { await api.exports.sales({ dateFrom: applied.dateFrom || undefined, dateTo: applied.dateTo || undefined }); }
+              finally { setDownloading(false); }
+            }}
+          >
+            <DownloadIcon className="h-4 w-4 mr-1" />
+            {downloading ? 'Exportando…' : 'Exportar CSV'}
+          </Button>
+        }
       />
 
       {/* Filtros */}
