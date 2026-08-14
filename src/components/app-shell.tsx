@@ -545,6 +545,56 @@ function GlobalSearch() {
   );
 }
 
+// ─── SSE stock alerts ─────────────────────────────────────────────────────────
+
+function useStockAlertCount(): number {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    if (!token) return;
+
+    const API_BASE = (process.env.NEXT_PUBLIC_API_BASE ?? '/api').replace(/\/$/, '');
+    const es = new EventSource(`${API_BASE}/stock/alerts/stream?token=${encodeURIComponent(token)}`);
+
+    es.onmessage = (e: MessageEvent<string>) => {
+      try {
+        const alerts = JSON.parse(e.data) as unknown[];
+        setCount(Array.isArray(alerts) ? alerts.length : 0);
+      } catch {
+        // ignore parse errors
+      }
+    };
+
+    es.onerror = () => es.close();
+
+    return () => es.close();
+  }, []);
+
+  return count;
+}
+
+function AlertsBell() {
+  const router = useRouter();
+  const count = useStockAlertCount();
+
+  return (
+    <button
+      type="button"
+      onClick={() => router.push('/inventario/alertas')}
+      aria-label={count > 0 ? `${count} alertas de stock` : 'Alertas de stock'}
+      className="relative inline-flex size-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+    >
+      <BellIcon className="size-5" />
+      {count > 0 && (
+        <span className="absolute -right-0.5 -top-0.5 flex min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">
+          {count > 99 ? '99+' : count}
+        </span>
+      )}
+    </button>
+  );
+}
+
 // ─── Shell principal ──────────────────────────────────────────────────────────
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -627,7 +677,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </p>
             </div>
           </div>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <AlertsBell />
             <GlobalSearch />
           </div>
         </header>
