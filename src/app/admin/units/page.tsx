@@ -20,6 +20,7 @@ import {
   SearchIcon,
 } from '@/components/icons';
 import { cn } from '@/lib/cn';
+import { RoleGuard } from '@/components/role-guard';
 
 const LIMIT = 10;
 
@@ -95,7 +96,7 @@ export default function UnitsPage() {
   }
 
   return (
-    <>
+    <RoleGuard allowedRoles={['administrador', 'almacenero']}>
       <PageHeader
         title="Unidades de medida"
         subtitle="Catálogo de unidades de medida para productos."
@@ -316,7 +317,7 @@ export default function UnitsPage() {
           }}
         />
       )}
-    </>
+    </RoleGuard>
   );
 }
 

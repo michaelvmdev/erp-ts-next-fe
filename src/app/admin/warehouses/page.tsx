@@ -20,6 +20,7 @@ import {
   SearchIcon,
 } from '@/components/icons';
 import { cn } from '@/lib/cn';
+import { RoleGuard } from '@/components/role-guard';
 
 const LIMIT = 10;
 
@@ -97,7 +98,7 @@ export default function WarehousesPage() {
   }
 
   return (
-    <>
+    <RoleGuard allowedRoles={['administrador', 'almacenero']}>
       <PageHeader
         title="Almacenes"
         subtitle="Catálogo de almacenes."
@@ -318,7 +319,7 @@ export default function WarehousesPage() {
           }}
         />
       )}
-    </>
+    </RoleGuard>
   );
 }
 

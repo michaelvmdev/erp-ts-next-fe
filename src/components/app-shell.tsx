@@ -40,12 +40,14 @@ interface NavLink {
   label: string;
   href: string;
   icon: IconType;
+  roles?: string[];
 }
 
 interface NavGroup {
   label: string;
   icon: IconType;
   children: Array<NavLink | NavGroup>;
+  roles?: string[];
 }
 
 type NavEntry = NavLink | NavGroup;
@@ -60,6 +62,22 @@ function groupContainsActive(group: NavGroup, pathname: string): boolean {
       ? groupContainsActive(child, pathname)
       : child.href === '/' ? pathname === '/' : pathname.startsWith(child.href),
   );
+}
+
+function canAccess(entry: NavLink | NavGroup, roleName: string): boolean {
+  if (!entry.roles) return true;
+  return entry.roles.includes(roleName);
+}
+
+function filterNavByRole(entries: NavEntry[], roleName: string): NavEntry[] {
+  return entries
+    .filter((e) => canAccess(e, roleName))
+    .map((e) => {
+      if (!isNavGroup(e)) return e;
+      const children = e.children.filter((c) => canAccess(c, roleName));
+      return { ...e, children };
+    })
+    .filter((e) => !isNavGroup(e) || e.children.length > 0);
 }
 
 const nav: NavEntry[] = [
@@ -138,26 +156,27 @@ const nav: NavEntry[] = [
       { label: 'Comparativa', href: '/diagramas/comparativa', icon: ChartIcon },
     ],
   },
-  { label: 'Pagos', href: '/payments', icon: ReceiptIcon },
+  { label: 'Pagos', href: '/payments', icon: ReceiptIcon, roles: ['administrador', 'contador'] },
   {
     label: 'NPS',
     icon: StarIcon,
+    roles: ['administrador', 'vendedor'],
     children: [
       { label: 'Resultados', href: '/nps/resultados', icon: ChartIcon },
       { label: 'Analítica', href: '/nps/analytics', icon: ChartIcon },
       { label: 'Nueva encuesta', href: '/nps/nueva', icon: PlusIcon },
     ],
   },
-  { label: 'Usuarios ecommerce', href: '/usuarios-ecommerce', icon: UserIcon },
+  { label: 'Usuarios ecommerce', href: '/usuarios-ecommerce', icon: UserIcon, roles: ['administrador'] },
   {
     label: 'Administración',
     icon: SettingsIcon,
     children: [
-      { label: 'Usuarios', href: '/admin/users', icon: UserIcon },
-      { label: 'Unidades de medida', href: '/admin/units', icon: SettingsIcon },
-      { label: 'Almacenes', href: '/admin/warehouses', icon: BoxIcon },
-      { label: 'Listas de precio', href: '/admin/price-lists', icon: TagIcon },
-      { label: 'Auditoría', href: '/admin/audit', icon: ShieldIcon },
+      { label: 'Usuarios', href: '/admin/users', icon: UserIcon, roles: ['administrador'] },
+      { label: 'Unidades de medida', href: '/admin/units', icon: SettingsIcon, roles: ['administrador', 'almacenero'] },
+      { label: 'Almacenes', href: '/admin/warehouses', icon: BoxIcon, roles: ['administrador', 'almacenero'] },
+      { label: 'Listas de precio', href: '/admin/price-lists', icon: TagIcon, roles: ['administrador', 'almacenero', 'contador'] },
+      { label: 'Auditoría', href: '/admin/audit', icon: ShieldIcon, roles: ['administrador'] },
     ],
   },
 ];
@@ -340,14 +359,18 @@ function SidebarContent({
   onCollapse,
   onClose,
   userName,
+  roleName,
   onLogout,
 }: {
   onNavigate: () => void;
   onCollapse?: () => void;
   onClose?: () => void;
   userName?: string;
+  roleName?: string;
   onLogout?: () => void;
 }) {
+  const visibleNav = filterNavByRole(nav, roleName ?? '');
+
   return (
     <div className="flex h-full flex-col">
       {/* Marca */}
@@ -373,7 +396,7 @@ function SidebarContent({
 
       {/* Navegación */}
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-3">
-        {nav.map((entry) =>
+        {visibleNav.map((entry) =>
           isNavGroup(entry) ? (
             <NavGroupItem key={entry.label} group={entry} onNavigate={onNavigate} />
           ) : (
@@ -401,7 +424,7 @@ function SidebarContent({
           </div>
         )}
         <div className="flex items-center justify-between gap-2">
-          <span className="truncate text-[11px] text-zinc-600">Michael Dev S.A.C. · v0.1</span>
+          <span className="truncate text-[11px] text-zinc-600">Michael Dev S.A.C. · v1.0</span>
           <ThemeToggle className={sidebarIconBtn} />
         </div>
       </div>
@@ -636,6 +659,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               onNavigate={close}
               onCollapse={() => setSidebarCollapsed(true)}
               userName={user?.name}
+              roleName={user?.roleName}
               onLogout={logout}
             />
           </div>
@@ -659,7 +683,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={close} />
           <div className="absolute inset-y-0 left-0 w-72 bg-zinc-950 shadow-2xl">
-            <SidebarContent onNavigate={close} onClose={close} userName={user?.name} onLogout={logout} />
+            <SidebarContent onNavigate={close} onClose={close} userName={user?.name} roleName={user?.roleName} onLogout={logout} />
           </div>
         </div>
       )}

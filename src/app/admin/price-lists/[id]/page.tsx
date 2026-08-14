@@ -8,6 +8,7 @@ import { ApiError, api, type PriceList, type PriceListItem, type Product } from 
 import { Button, Card, inputClass, PageHeader } from '@/components/ui';
 import { ChevronLeftIcon, PlusIcon, TrashIcon } from '@/components/icons';
 import { cn } from '@/lib/cn';
+import { RoleGuard } from '@/components/role-guard';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -173,7 +174,7 @@ export default function PriceListDetailPage() {
   }
 
   return (
-    <>
+    <RoleGuard allowedRoles={['administrador', 'almacenero', 'contador']}>
       {/* Breadcrumb / header */}
       <div className="mb-1">
         <Link
@@ -351,6 +352,6 @@ export default function PriceListDetailPage() {
         onSelect={addProduct}
         onClose={() => setPickerOpen(false)}
       />
-    </>
+    </RoleGuard>
   );
 }

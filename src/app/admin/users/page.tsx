@@ -5,6 +5,7 @@ import { api, ApiError, type Paginated, type RoleItem, type UpdateUserRequest, t
 import { Button, Card, inputClass, labelClass, PageHeader } from '@/components/ui';
 import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, PencilIcon } from '@/components/icons';
 import { cn } from '@/lib/cn';
+import { RoleGuard } from '@/components/role-guard';
 
 const LIMIT = 15;
 
@@ -169,7 +170,7 @@ export default function UsersPage() {
   const totalPages = data ? Math.ceil(data.meta.total / LIMIT) : 1;
 
   return (
-    <>
+    <RoleGuard allowedRoles={['administrador']}>
       <PageHeader title="Usuarios" subtitle="Gestión de cuentas de acceso al sistema" />
 
       <Card>
@@ -281,6 +282,6 @@ export default function UsersPage() {
           onSaved={handleSaved}
         />
       )}
-    </>
+    </RoleGuard>
   );
 }

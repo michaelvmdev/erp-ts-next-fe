@@ -929,6 +929,7 @@ export interface RegisterRequest {
 export interface UserItem {
   id: string;
   roleId: string;
+  roleName: string;
   email: string;
   name: string;
   active: boolean;

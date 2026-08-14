@@ -4,6 +4,7 @@ import { Fragment, useEffect, useState } from 'react';
 import { api, type AuditAction, type AuditEntry, type AuditListQuery } from '@/lib/api';
 import { Button, Card, PageHeader, inputClass, labelClass } from '@/components/ui';
 import { cn } from '@/lib/cn';
+import { RoleGuard } from '@/components/role-guard';
 
 const ACTION_COLOR: Record<AuditAction, string> = {
   CREATE: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400',
@@ -56,7 +57,7 @@ export default function AuditPage() {
   const totalPages = data ? Math.ceil(data.total / limit) : 0;
 
   return (
-    <>
+    <RoleGuard allowedRoles={['administrador']}>
       <PageHeader
         title="Auditoría de cambios"
         subtitle="Registro de acciones CREATE / UPDATE / DELETE sobre entidades del sistema."
@@ -232,6 +233,6 @@ export default function AuditPage() {
           </div>
         )}
       </Card>
-    </>
+    </RoleGuard>
   );
 }

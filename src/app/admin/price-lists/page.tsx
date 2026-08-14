@@ -21,6 +21,7 @@ import {
   SearchIcon,
 } from '@/components/icons';
 import { cn } from '@/lib/cn';
+import { RoleGuard } from '@/components/role-guard';
 
 const LIMIT = 10;
 
@@ -105,7 +106,7 @@ export default function PriceListsPage() {
   }
 
   return (
-    <>
+    <RoleGuard allowedRoles={['administrador', 'almacenero', 'contador']}>
       <PageHeader
         title="Listas de precio"
         subtitle="Gestión de listas de precio para productos."
@@ -333,7 +334,7 @@ export default function PriceListsPage() {
           }}
         />
       )}
-    </>
+    </RoleGuard>
   );
 }
 
