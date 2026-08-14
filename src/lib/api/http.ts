@@ -1,20 +1,10 @@
 import type { ApiErrorBody } from './types';
 
-/**
- * Cliente HTTP base contra el proxy de Next (`/api/*`), que a su vez reenvia al
- * backend NestJS. Al ser mismo origen no hace falta CORS ni conocer la URL real
- * del backend desde el navegador.
- *
- * Pensado para componentes de cliente. Desde un Server Component / route handler
- * la URL relativa no resuelve: define `NEXT_PUBLIC_API_BASE` con un origen
- * absoluto en ese caso.
- */
 const API_BASE = (process.env.NEXT_PUBLIC_API_BASE ?? '/api').replace(/\/$/, '');
 
 type QueryValue = string | number | boolean | undefined | null;
 export type Query = Record<string, QueryValue>;
 
-/** Error tipado: expone el status HTTP y el cuerpo de error de la API. */
 export class ApiError extends Error {
   constructor(
     readonly status: number,
@@ -30,7 +20,6 @@ export class ApiError extends Error {
     this.name = 'ApiError';
   }
 
-  /** Codigo estable del error (p. ej. "VALIDATION_ERROR"), si vino. */
   get code(): string | undefined {
     return this.body?.code;
   }
@@ -42,7 +31,6 @@ function buildUrl(path: string, query?: Query): string {
 
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(query)) {
-    // Se omiten vacios para no ensuciar la URL con `?campo=`.
     if (value !== undefined && value !== null && value !== '') {
       params.set(key, String(value));
     }
@@ -63,33 +51,77 @@ function getAuthHeaders(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+// ── Silent refresh ────────────────────────────────────────────────────────────
+// One in-flight refresh promise shared across concurrent 401s.
+let refreshPromise: Promise<boolean> | null = null;
+
+async function attemptRefresh(): Promise<boolean> {
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = (async () => {
+    try {
+      const response = await fetch(`${API_BASE}/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include', // sends the httpOnly refresh cookie
+        cache: 'no-store',
+      });
+      if (!response.ok) return false;
+
+      const data = (await response.json()) as { accessToken: string };
+      localStorage.setItem('accessToken', data.accessToken);
+      return true;
+    } catch {
+      return false;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
 async function request<T>(
   method: string,
   path: string,
   { query, body, signal }: RequestOptions = {},
 ): Promise<T> {
+  const isAuthPath = path.includes('/auth/login') || path.includes('/auth/refresh');
   const hasBody = body !== undefined;
-  const authHeaders = getAuthHeaders();
 
-  const response = await fetch(buildUrl(path, query), {
-    method,
-    headers: {
-      ...authHeaders,
-      ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
-    },
-    body: hasBody ? JSON.stringify(body) : undefined,
-    signal,
-    cache: 'no-store',
-  });
+  const doFetch = () =>
+    fetch(buildUrl(path, query), {
+      method,
+      headers: {
+        ...getAuthHeaders(),
+        ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
+      },
+      body: hasBody ? JSON.stringify(body) : undefined,
+      credentials: 'include',
+      signal,
+      cache: 'no-store',
+    });
 
-  // 401 → clear token and redirect to login (only in browser, not during login itself)
-  if (response.status === 401 && typeof window !== 'undefined' && !path.includes('/auth/login')) {
+  let response = await doFetch();
+
+  // 401 on a non-auth endpoint → attempt silent refresh and retry once
+  if (response.status === 401 && !isAuthPath && typeof window !== 'undefined') {
+    const refreshed = await attemptRefresh();
+    if (refreshed) {
+      response = await doFetch();
+    } else {
+      localStorage.removeItem('accessToken');
+      window.location.href = '/login';
+      return undefined as T;
+    }
+  }
+
+  // Still 401 after retry → force logout
+  if (response.status === 401 && typeof window !== 'undefined') {
     localStorage.removeItem('accessToken');
     window.location.href = '/login';
     return undefined as T;
   }
 
-  // 204 No Content (p. ej. DELETE de productos): sin cuerpo que parsear.
   if (response.status === 204) return undefined as T;
 
   const text = await response.text();
@@ -101,16 +133,15 @@ async function request<T>(
   return data as T;
 }
 
-/** Descarga un endpoint que devuelve un archivo (CSV, PDF…) y dispara el guardado. */
 async function downloadFile(
   path: string,
   filename: string,
   query?: Query,
 ): Promise<void> {
-  const authHeaders = getAuthHeaders();
   const response = await fetch(buildUrl(path, query), {
     method: 'GET',
-    headers: { ...authHeaders },
+    headers: { ...getAuthHeaders() },
+    credentials: 'include',
     cache: 'no-store',
   });
   if (!response.ok) throw new ApiError(response.status, null);

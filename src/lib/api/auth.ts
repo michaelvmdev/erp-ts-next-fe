@@ -25,6 +25,9 @@ export const authApi = {
 
   resetPassword: (token: string, newPassword: string, signal?: AbortSignal) =>
     http.post<void>('/auth/reset-password', { token, newPassword }, signal),
+
+  logout: (signal?: AbortSignal) =>
+    http.post<void>('/auth/logout', undefined, signal),
 };
 
 export const usersApi = {

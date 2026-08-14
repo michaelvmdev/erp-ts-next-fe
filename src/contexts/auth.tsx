@@ -49,6 +49,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     localStorage.removeItem('accessToken');
     setUser(null);
+    // Best-effort: clear the httpOnly refresh-token cookie server-side.
+    // Don't await — the user is logged out locally regardless.
+    void api.auth.logout().catch(() => {});
     window.location.href = '/login';
   }, []);
 
