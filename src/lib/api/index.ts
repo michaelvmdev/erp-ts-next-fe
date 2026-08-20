@@ -34,6 +34,11 @@ import { usersEcommerceApi } from './users-ecommerce';
 import { exportsApi } from './exports';
 import { searchApi } from './search';
 import { auditApi } from './audit';
+import { purchaseReturnsApi } from './purchase-returns';
+import { quotesApi } from './quotes';
+import { lotsApi } from './lots';
+import { journalApi, reportsApi } from './journal';
+import { sunatApi } from './sunat';
 
 export {
   brandsApi,
@@ -63,6 +68,12 @@ export {
   exportsApi,
   searchApi,
   auditApi,
+  purchaseReturnsApi,
+  quotesApi,
+  lotsApi,
+  journalApi,
+  reportsApi,
+  sunatApi,
 };
 
 /** Cliente agrupado por dominio, espejo de los recursos del backend. */
@@ -94,4 +105,10 @@ export const api = {
   exports: exportsApi,
   search: searchApi,
   audit: auditApi,
+  purchaseReturns: purchaseReturnsApi,
+  quotes: quotesApi,
+  lots: lotsApi,
+  journal: journalApi,
+  reports: reportsApi,
+  sunat: sunatApi,
 };

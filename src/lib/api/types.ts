@@ -114,6 +114,7 @@ export interface Product {
   productDescription: string | null;
   productImage: string | null;
   productUnitPrice: number;
+  igvRate: number;
   productActive: boolean;
   /** Solo presente al obtener un producto por ID. */
   stockQuantity?: number;
@@ -126,6 +127,7 @@ export interface CreateProductRequest {
   productDescription?: string | null;
   productImage?: string | null;
   productUnitPrice: number;
+  igvRate?: number;
   productActive?: boolean;
 }
 
@@ -138,6 +140,7 @@ export interface UpdateProductRequest {
   /** `null` quita la imagen; omitir la deja intacta. */
   productImage?: string | null;
   productUnitPrice?: number;
+  igvRate?: number;
   productActive?: boolean;
 }
 
@@ -457,7 +460,7 @@ export interface MonthlySalesByUbigeoParams {
 
 // --- Inventario / Stock ------------------------------------------------------
 
-export type StockMovementType = 'purchase_in' | 'sale_out' | 'return_in' | 'adjustment';
+export type StockMovementType = 'purchase_in' | 'sale_out' | 'return_in' | 'purchase_return' | 'transfer_out' | 'transfer_in' | 'adjustment';
 
 export interface StockAlert {
   productId: string;
@@ -1043,4 +1046,301 @@ export interface SearchResult {
 export interface HealthStatus {
   status: string;
   latencyMs: number;
+}
+
+// --- Plan de Cuentas (PCGE) --------------------------------------------------
+
+export type AccountType = 'activo' | 'pasivo' | 'patrimonio' | 'ingresos' | 'gastos' | 'orden';
+
+export interface Account {
+  accountId: string;
+  code: string;
+  name: string;
+  type: AccountType;
+  parentCode: string | null;
+  active: boolean;
+}
+
+export interface CreateAccountRequest {
+  code: string;
+  name: string;
+  type: AccountType;
+  parentCode?: string | null;
+  active?: boolean;
+}
+
+export interface UpdateAccountRequest {
+  code?: string;
+  name?: string;
+  type?: AccountType;
+  parentCode?: string | null;
+  active?: boolean;
+}
+
+export interface ListAccountsQuery {
+  code?: string;
+  name?: string;
+  type?: AccountType;
+  parentCode?: string;
+  active?: boolean;
+  sortDirection?: SortDirection;
+  page?: number;
+  limit?: number;
+}
+
+// --- Devoluciones de compra --------------------------------------------------
+
+export interface PurchaseReturnLine {
+  item: number;
+  productId: string;
+  quantity: number;
+  unitCost: number;
+  partial: number;
+}
+
+export interface PurchaseReturnSummary {
+  id: string;
+  purchaseId: string;
+  number: string;
+  date: string;
+  hour: string;
+  reason: string;
+  subTotal: number;
+  igv: number;
+  total: number;
+  lineCount: number;
+}
+
+export interface PurchaseReturnDetail {
+  id: string;
+  purchaseId: string;
+  number: string;
+  date: string;
+  hour: string;
+  reason: string;
+  subTotal: number;
+  igv: number;
+  total: number;
+  lines: PurchaseReturnLine[];
+}
+
+export interface CreatePurchaseReturnDetailItem {
+  productId: string;
+  quantity: number;
+}
+
+export interface CreatePurchaseReturnRequest {
+  purchaseId: string;
+  reason: string;
+  returnDate?: string;
+  returnHour?: string;
+  purchaseReturnDetails: CreatePurchaseReturnDetailItem[];
+  warehouseId?: string;
+}
+
+export interface ListPurchaseReturnsQuery {
+  purchaseId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  page?: number;
+  limit?: number;
+}
+
+// --- Cotizaciones -------------------------------------------------------------
+
+export type QuoteStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired';
+
+export interface QuoteLine {
+  item: number;
+  productId: string;
+  quantity: number;
+  unitPrice: number;
+  partial: number;
+}
+
+export interface QuoteSummary {
+  id: string;
+  number: string;
+  status: QuoteStatus;
+  clientId: string;
+  clientName: string;
+  date: string;
+  validUntil: string;
+  total: number;
+  lineCount: number;
+  createdAt: string;
+}
+
+export interface QuoteDetail {
+  id: string;
+  number: string;
+  status: QuoteStatus;
+  clientId: string;
+  date: string;
+  validUntil: string;
+  notes: string | null;
+  subTotal: number;
+  igv: number;
+  total: number;
+  lines: QuoteLine[];
+  createdAt: string;
+}
+
+export interface CreateQuoteDetailItem {
+  item: number;
+  productId: string;
+  quantity: number;
+}
+
+export interface CreateQuoteRequest {
+  clientId: string;
+  date?: string;
+  validUntil: string;
+  notes?: string;
+  details: CreateQuoteDetailItem[];
+}
+
+export interface UpdateQuoteStatusRequest {
+  status: Exclude<QuoteStatus, 'draft'>;
+}
+
+export interface ListQuotesQuery {
+  clientId?: string;
+  status?: QuoteStatus;
+  dateFrom?: string;
+  dateTo?: string;
+  page?: number;
+  limit?: number;
+}
+
+// --- Lotes y vencimientos -----------------------------------------------------
+
+export type LotStatus = 'active' | 'depleted' | 'expired';
+
+export interface LotSummary {
+  id: string;
+  lotNumber: string;
+  productId: string;
+  productName: string;
+  warehouseId: string;
+  warehouseCode: string;
+  expirationDate: string;
+  initialQuantity: number;
+  currentQuantity: number;
+  status: LotStatus;
+  createdAt: string;
+}
+
+export interface LotDetail {
+  id: string;
+  lotNumber: string;
+  productId: string;
+  warehouseId: string;
+  manufacturingDate: string | null;
+  expirationDate: string;
+  initialQuantity: number;
+  currentQuantity: number;
+  status: LotStatus;
+  notes: string | null;
+  createdAt: string;
+}
+
+export interface CreateLotRequest {
+  lotNumber: string;
+  productId: string;
+  warehouseId: string;
+  manufacturingDate?: string;
+  expirationDate: string;
+  initialQuantity: number;
+  notes?: string;
+}
+
+export interface ListLotsQuery {
+  productId?: string;
+  warehouseId?: string;
+  status?: LotStatus;
+  expiringBeforeDate?: string;
+  page?: number;
+  limit?: number;
+}
+
+// --- Libro diario (Journal / Partida doble) -----------------------------------
+
+export type JournalReferenceType =
+  | 'sale'
+  | 'purchase'
+  | 'purchase_return'
+  | 'credit_note'
+  | 'manual';
+
+export interface JournalLine {
+  lineNumber: number;
+  accountCode: string;
+  accountName: string;
+  debit: string;
+  credit: string;
+}
+
+export interface JournalEntrySummary {
+  id: string;
+  entryNumber: string;
+  entryDate: string;
+  description: string;
+  referenceType: JournalReferenceType;
+  referenceId: string | null;
+  totalDebit: string;
+  lineCount: number;
+}
+
+export interface JournalEntryDetail {
+  id: string;
+  entryNumber: string;
+  entryDate: string;
+  description: string;
+  referenceType: JournalReferenceType;
+  referenceId: string | null;
+  totalDebit: string;
+  totalCredit: string;
+  lines: JournalLine[];
+}
+
+export interface CreateJournalLineRequest {
+  accountCode: string;
+  accountName: string;
+  debit: number;
+  credit: number;
+}
+
+export interface CreateJournalEntryRequest {
+  entryDate: string;
+  description: string;
+  referenceType: JournalReferenceType;
+  referenceId?: string;
+  lines: CreateJournalLineRequest[];
+}
+
+export interface ListJournalEntriesQuery {
+  dateFrom?: string;
+  dateTo?: string;
+  referenceType?: JournalReferenceType;
+  accountCode?: string;
+  page?: number;
+  limit?: number;
+}
+
+// --- Reportes PDT 621 --------------------------------------------------------
+
+export interface Pdt621Period {
+  baseImponible: string;
+  igv: string;
+  total: string;
+  count: number;
+}
+
+export interface Pdt621Report {
+  period: string;
+  ventas: Pdt621Period;
+  compras: Pdt621Period;
+  igvDeterminado: string | null;
+  saldoAFavor: string | null;
 }
