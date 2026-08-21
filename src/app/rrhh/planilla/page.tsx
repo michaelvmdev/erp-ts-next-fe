@@ -47,6 +47,20 @@ const STATUS_LABELS = { draft: 'Borrador', approved: 'Aprobada', paid: 'Pagada' 
 
 function fmt(n: number) { return `S/. ${n.toFixed(2)}`; }
 
+function downloadPdf(url: string, filename: string) {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('erp_token') ?? '' : '';
+  fetch(`/api${url}`, { headers: { Authorization: `Bearer ${token}` } })
+    .then((r) => r.blob())
+    .then((blob) => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    })
+    .catch(() => alert('Error al descargar PDF.'));
+}
+
 function PayrollDetailModal({ payroll, onClose, onApproved }: { payroll: Payroll; onClose: () => void; onApproved: () => void }) {
   const [lines,    setLines]    = useState<PayrollLine[]>([]);
   const [approving,setApproving]= useState(false);
@@ -61,6 +75,10 @@ function PayrollDetailModal({ payroll, onClose, onApproved }: { payroll: Payroll
     finally { setApproving(false); }
   }
 
+  function downloadPlame() {
+    downloadPdf(`/rrhh/payrolls/${payroll.payrollId}/plame`, `PLAME-${payroll.period}.pdf`);
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl dark:bg-slate-900">
@@ -71,6 +89,7 @@ function PayrollDetailModal({ payroll, onClose, onApproved }: { payroll: Payroll
           </div>
           <div className="flex items-center gap-3">
             <span className={`rounded-full px-3 py-1 text-xs font-semibold ${STATUS_STYLES[payroll.status]}`}>{STATUS_LABELS[payroll.status]}</span>
+            <Button variant="secondary" onClick={downloadPlame}>PLAME PDF</Button>
             {payroll.status === 'draft' && (
               <Button onClick={() => void approve()} disabled={approving}>{approving ? 'Aprobando…' : 'Aprobar planilla'}</Button>
             )}
@@ -95,6 +114,7 @@ function PayrollDetailModal({ payroll, onClose, onApproved }: { payroll: Payroll
                   <th className="px-3 py-2 text-right font-bold">Neto</th>
                   <th className="px-3 py-2 text-right">CTS prov.</th>
                   <th className="px-3 py-2 text-right">Grat. prov.</th>
+                  <th className="px-3 py-2 text-center">Boleta</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -111,6 +131,15 @@ function PayrollDetailModal({ payroll, onClose, onApproved }: { payroll: Payroll
                     <td className="px-3 py-2 text-right font-bold text-emerald-600">{fmt(l.netSalary)}</td>
                     <td className="px-3 py-2 text-right text-slate-400">{fmt(l.ctsProvision)}</td>
                     <td className="px-3 py-2 text-right text-slate-400">{fmt(l.gratificationProv)}</td>
+                    <td className="px-3 py-2 text-center">
+                      <button
+                        type="button"
+                        onClick={() => downloadPdf(`/rrhh/payrolls/${payroll.payrollId}/lines/${l.lineId}/boleta`, `boleta-${l.employeeName}-${payroll.period}.pdf`)}
+                        className="rounded px-2 py-0.5 text-xs font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30"
+                      >
+                        PDF
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

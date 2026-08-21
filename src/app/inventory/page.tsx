@@ -14,7 +14,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from '@/components/icons';
 import { formatCurrency } from '@/lib/format';
 import { cn } from '@/lib/cn';
 
-type Tab = 'saldos' | 'movimientos';
+type Tab = 'saldos' | 'movimientos' | 'alertas';
 
 function formatDateTime(iso: string) {
   return new Date(iso).toLocaleString('es-PE', {
@@ -38,14 +38,15 @@ export default function InventoryPage() {
     <>
       <PageHeader title="Inventario" subtitle="Saldos de stock y movimientos de almacén." />
       <div className="mb-6 flex border-b border-slate-200 dark:border-slate-800">
-        {(['saldos', 'movimientos'] as Tab[]).map((t) => (
+        {(['saldos', 'movimientos', 'alertas'] as Tab[]).map((t) => (
           <button key={t} type="button" className={tabCls(t)} onClick={() => setTab(t)}>
-            {t === 'saldos' ? 'Saldos' : 'Movimientos'}
+            {t === 'saldos' ? 'Saldos' : t === 'movimientos' ? 'Movimientos' : 'Alertas de stock'}
           </button>
         ))}
       </div>
-      {tab === 'saldos' && <SaldosTab />}
+      {tab === 'saldos'      && <SaldosTab />}
       {tab === 'movimientos' && <MovimientosTab />}
+      {tab === 'alertas'     && <AlertasTab />}
     </>
   );
 }
@@ -171,7 +172,148 @@ function SaldosTab() {
   );
 }
 
-// ─── Tab 2: Movimientos ──────────────────────────────────────────────────────
+// ─── Tab 2: Alertas ──────────────────────────────────────────────────────────
+
+interface StockAlert {
+  productId:    string;
+  productName:  string;
+  warehouseId:  string;
+  warehouseCode:string;
+  currentStock: number;
+  minimumStock: number;
+  deficit:      number;
+}
+
+interface GeneratePosResult {
+  created: Array<{ purchaseOrderId: string; supplierId: string; items: number }>;
+  skipped: Array<{ productId: string; productName: string; reason: string }>;
+}
+
+function AlertasTab() {
+  const [alerts,       setAlerts]       = useState<StockAlert[]>([]);
+  const [loading,      setLoading]      = useState(true);
+  const [notifying,    setNotifying]    = useState(false);
+  const [generating,   setGenerating]   = useState(false);
+  const [poResult,     setPoResult]     = useState<GeneratePosResult | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const data = await api.inventory.getAlerts();
+      setAlerts(data);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { void load(); }, []);
+
+  async function notify() {
+    setNotifying(true);
+    try {
+      await api.inventory.notifyAlerts();
+      alert('Notificaciones enviadas a todos los usuarios activos.');
+    } catch { alert('Error al enviar notificaciones.'); }
+    finally { setNotifying(false); }
+  }
+
+  async function generatePos() {
+    setGenerating(true);
+    setPoResult(null);
+    try {
+      const result = await api.inventory.generatePos();
+      setPoResult(result);
+    } catch { alert('Error al generar órdenes de compra.'); }
+    finally { setGenerating(false); }
+  }
+
+  return (
+    <>
+      <Card className="mb-4 p-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="text-sm text-slate-600 dark:text-slate-300">
+            Productos con stock por debajo del mínimo configurado.
+          </p>
+          <div className="ml-auto flex gap-2">
+            <Button variant="secondary" onClick={() => void load()} disabled={loading}>
+              Actualizar
+            </Button>
+            <Button variant="secondary" onClick={() => void notify()} disabled={notifying || alerts.length === 0}>
+              {notifying ? 'Enviando…' : 'Notificar a usuarios'}
+            </Button>
+            <Button onClick={() => void generatePos()} disabled={generating || alerts.length === 0}>
+              {generating ? 'Generando…' : 'Generar OCs sugeridas'}
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      {poResult && (
+        <Card className="mb-4 p-4 text-sm">
+          <p className="font-semibold text-slate-800 dark:text-white mb-2">
+            Resultado: {poResult.created.length} OC{poResult.created.length !== 1 ? 's' : ''} creada{poResult.created.length !== 1 ? 's' : ''}
+          </p>
+          {poResult.created.map((c) => (
+            <p key={c.purchaseOrderId} className="text-emerald-700 dark:text-emerald-400">
+              ✓ OC {c.purchaseOrderId.slice(0, 8)}… — {c.items} producto{c.items !== 1 ? 's' : ''}
+            </p>
+          ))}
+          {poResult.skipped.map((s) => (
+            <p key={s.productId} className="text-amber-600 dark:text-amber-400">
+              ⚠ {s.productName}: {s.reason}
+            </p>
+          ))}
+        </Card>
+      )}
+
+      <Card className="overflow-hidden">
+        {loading ? (
+          <p className="py-12 text-center text-sm text-slate-400">Cargando…</p>
+        ) : alerts.length === 0 ? (
+          <p className="py-12 text-center text-sm text-emerald-600 dark:text-emerald-400">
+            Sin alertas — todo el stock está por encima del mínimo.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wider text-slate-400 dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-500">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Producto</th>
+                  <th className="px-4 py-3 font-medium">Almacén</th>
+                  <th className="px-4 py-3 text-right font-medium">Stock actual</th>
+                  <th className="px-4 py-3 text-right font-medium">Mínimo</th>
+                  <th className="px-4 py-3 text-right font-medium">Déficit</th>
+                </tr>
+              </thead>
+              <tbody>
+                {alerts.map((a) => (
+                  <tr key={`${a.productId}-${a.warehouseId}`}
+                    className="border-b border-slate-100 last:border-0 dark:border-slate-800">
+                    <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-100">{a.productName}</td>
+                    <td className="px-4 py-3 text-slate-500 font-mono text-xs">{a.warehouseCode}</td>
+                    <td className="px-4 py-3 text-right">
+                      <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-700 dark:bg-red-500/15 dark:text-red-400 tabular-nums">
+                        {a.currentStock}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right text-slate-500 tabular-nums">{a.minimumStock}</td>
+                    <td className="px-4 py-3 text-right">
+                      <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-500/15 dark:text-amber-400 tabular-nums">
+                        -{a.deficit}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+    </>
+  );
+}
+
+// ─── Tab 3: Movimientos ──────────────────────────────────────────────────────
 
 const MOVEMENT_TYPE_LABELS: Record<StockMovementType, string> = {
   purchase_in: 'Entrada compra',

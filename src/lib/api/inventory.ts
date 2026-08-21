@@ -8,6 +8,11 @@ import type {
   StockMovement,
 } from './types';
 
+export interface GeneratePosResult {
+  created: Array<{ purchaseOrderId: string; supplierId: string; items: number }>;
+  skipped: Array<{ productId: string; productName: string; reason: string }>;
+}
+
 export const inventoryApi = {
   listBalances: (query: ListStockBalancesQuery = {}, signal?: AbortSignal) =>
     http.get<Paginated<StockBalance>>('/stock', query as Query, signal),
@@ -17,4 +22,13 @@ export const inventoryApi = {
 
   alerts: (signal?: AbortSignal) =>
     http.get<StockAlert[]>('/stock/alerts', undefined, signal),
+
+  getAlerts: (signal?: AbortSignal) =>
+    http.get<StockAlert[]>('/stock/alerts', undefined, signal),
+
+  notifyAlerts: () =>
+    http.post<void>('/stock/alerts/notify', {}),
+
+  generatePos: () =>
+    http.post<GeneratePosResult>('/stock/alerts/generate-pos', {}),
 };
